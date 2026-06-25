@@ -46,7 +46,7 @@ export default function WishlistDrawer() {
         const products = await Promise.all(productPromises);
         setWishlistItems(products.filter((p) => p !== null));
       } catch (err) {
-        console.error("Gagal memuat barang favorit", err);
+        console.error("Failed to load favorite items", err);
       } finally {
         setLoading(false);
       }
@@ -60,7 +60,7 @@ export default function WishlistDrawer() {
     try {
       await toggleWishlist(user.uid, productId);
     } catch (err) {
-      console.error("Gagal menghapus dari wishlist", err);
+      console.error("Failed to remove from wishlist", err);
     }
   };
 
@@ -93,7 +93,7 @@ export default function WishlistDrawer() {
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-5 border-b border-whisper">
               <span className="font-black tracking-widest text-xs uppercase text-ink flex items-center gap-1.5">
-                <Heart size={14} weight="bold" /> DAFTAR KEINGINAN ({wishlistIds.length})
+                <Heart size={14} weight="bold" /> WISHLIST ({wishlistIds.length})
               </span>
               <button
                 onClick={() => setIsWishlistOpen(false)}
@@ -108,7 +108,7 @@ export default function WishlistDrawer() {
               {!user ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <p className="text-[10px] font-black uppercase tracking-widest text-steel mb-4">
-                    Silakan login untuk menyimpan produk favorit Anda.
+                    Please log in to save your favorite products.
                   </p>
                   <button
                     onClick={() => {
@@ -117,25 +117,25 @@ export default function WishlistDrawer() {
                     }}
                     className="border border-black px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors cursor-pointer"
                   >
-                    Masuk Akun
+                    LOGIN
                   </button>
                 </div>
               ) : loading && wishlistItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-2">
                   <div className="w-6 h-6 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
-                  <span className="text-[9px] text-steel font-black uppercase tracking-widest animate-pulse">Memuat favorit...</span>
+                  <span className="text-[9px] text-steel font-black uppercase tracking-widest animate-pulse">Loading wishlist...</span>
                 </div>
               ) : wishlistItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <div className="w-12 h-12 bg-surface border border-whisper flex items-center justify-center text-steel mb-4">
                     <Heart size={22} weight="bold" />
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-steel">Daftar Keinginan Kosong</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-steel">Your Wishlist is Empty</p>
                   <button
                     onClick={() => setIsWishlistOpen(false)}
                     className="mt-4 border border-black px-4 py-2 text-[9px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors cursor-pointer"
                   >
-                    Mulai Belanja
+                    Start Shopping
                   </button>
                 </div>
               ) : (
@@ -174,12 +174,12 @@ export default function WishlistDrawer() {
                         onClick={() => handleViewDetails(item.id)}
                         className="border border-black px-3 py-1.5 text-[9px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all cursor-pointer rounded-none"
                       >
-                        DETAIL
+                        VIEW DETAILS
                       </button>
                       <button
                         onClick={() => handleRemove(item.id)}
                         className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                        title="Hapus"
+                        title="Remove"
                       >
                         <HeartBreak size={15} weight="bold" />
                       </button>

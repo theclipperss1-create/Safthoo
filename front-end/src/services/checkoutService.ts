@@ -43,7 +43,7 @@ export const checkoutCart = async (
       
       const stock = pDoc.data().stock_qty;
       if (stock < items[i].quantity) {
-        throw new Error(`Stok tidak cukup untuk ${items[i].name} (Sisa: ${stock})`);
+        throw new Error(`Insufficient stock for ${items[i].name} (Available: ${stock})`);
       }
       updates.push({ ref: productRefs[i], newStock: stock - items[i].quantity });
     }

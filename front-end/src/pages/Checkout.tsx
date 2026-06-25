@@ -102,7 +102,7 @@ export default function Checkout() {
     const code = promoInput.trim().toUpperCase();
 
     if (!code) {
-      setPromoMessage('Masukkan kode voucher.');
+      setPromoMessage('Please enter a promo code.');
       return;
     }
 
@@ -111,27 +111,27 @@ export default function Checkout() {
       setDiscountAmount(discount);
       setAppliedPromo(code);
       setPromoSuccess(true);
-      setPromoMessage(`Kupon berhasil! Diskon 10% (-Rp ${discount.toLocaleString('id-ID')})`);
+      setPromoMessage(`Coupon applied. 10% discount (-Rp ${discount.toLocaleString('id-ID')})`);
     } else if (code === 'FREEPRIORITY') {
       if (shippingMethod === 'Priority') {
         setDiscountAmount(20000);
         setAppliedPromo(code);
         setPromoSuccess(true);
-        setPromoMessage('Kupon berhasil! Gratis ongkir Priority Express (-Rp 20.000)');
+        setPromoMessage('Coupon applied. Free Priority Express shipping (-Rp 20.000)');
       } else {
-        setPromoMessage('Kupon hanya berlaku untuk kurir Priority Express.');
+        setPromoMessage('Coupon is only valid for Priority Express shipping.');
       }
     } else if (code === 'STREETMOVEMENT') {
       if (subtotal >= 500000) {
         setDiscountAmount(50000);
         setAppliedPromo(code);
         setPromoSuccess(true);
-        setPromoMessage('Kupon berhasil! Diskon kampanye Street Movement (-Rp 50.000)');
+        setPromoMessage('Coupon applied. Street Movement campaign discount (-Rp 50.000)');
       } else {
-        setPromoMessage('Minimal pembelian Rp 500.000 untuk kupon ini.');
+        setPromoMessage('Minimum purchase of Rp 500,000 required for this coupon.');
       }
     } else {
-      setPromoMessage('Kode promo tidak valid.');
+      setPromoMessage('Invalid promo code.');
     }
   };
 
@@ -143,12 +143,12 @@ export default function Checkout() {
 
     // Form Validation
     if (!recipientName.trim() || !phone.trim() || !address.trim() || !city.trim() || !postalCode.trim()) {
-      setFormError('Semua kolom bertanda bintang (*) wajib diisi.');
+      setFormError('All fields marked with an asterisk (*) are required.');
       return;
     }
 
     if (saveAddressChecked && !addressLabel.trim()) {
-      setFormError('Label alamat wajib diisi jika Anda ingin menyimpan alamat ini.');
+      setFormError('Address label is required if you want to save this address.');
       return;
     }
 
@@ -205,7 +205,7 @@ export default function Checkout() {
       });
 
     } catch (err: any) {
-      setError(err.message || 'Gagal memproses pesanan. Silakan coba lagi.');
+      setError(err.message || 'Failed to process order. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -219,10 +219,10 @@ export default function Checkout() {
     return (
       <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-canvas text-ink text-center">
         <WarningCircle size={48} className="text-red-500 mb-4" />
-        <h2 className="text-lg font-black uppercase tracking-widest mb-2">Checkout Gagal</h2>
+        <h2 className="text-lg font-black uppercase tracking-widest mb-2">Checkout Failed</h2>
         <p className="text-steel text-xs font-medium mb-6 max-w-sm leading-relaxed">{error}</p>
         <Link to="/cart" className="bg-black text-white px-6 py-3.5 font-bold text-xs uppercase tracking-widest hover:bg-neutral-900 transition-colors">
-          Kembali ke Keranjang
+          Back to Cart
         </Link>
       </div>
     );
@@ -233,7 +233,7 @@ export default function Checkout() {
       <div className="min-h-[100dvh] flex items-center justify-center bg-canvas text-ink">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
-          <p className="font-bold text-xs uppercase tracking-widest animate-pulse">Memproses pesanan Anda...</p>
+          <p className="font-bold text-xs uppercase tracking-widest animate-pulse">Processing your order...</p>
         </div>
       </div>
     );
@@ -256,7 +256,7 @@ export default function Checkout() {
             {/* Header Back Button */}
             <div className="mb-6 flex items-center">
               <Link to="/cart" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-steel hover:text-ink transition-colors">
-                <ArrowLeft size={14} weight="bold" /> Kembali ke Keranjang
+                <ArrowLeft size={14} weight="bold" /> Back to Cart
               </Link>
             </div>
 
@@ -267,7 +267,7 @@ export default function Checkout() {
                 {/* Form Section */}
                 <div className="lg:col-span-7 bg-white border border-whisper p-6 sm:p-8 flex flex-col gap-6">
                 <div className="flex items-center gap-2 border-b border-whisper pb-3 text-xs font-black uppercase tracking-widest text-black">
-                  <MapPin size={16} weight="bold" /> Informasi Pengiriman
+                  <MapPin size={16} weight="bold" /> Shipping Information
                 </div>
 
                 {formError && (
@@ -279,7 +279,7 @@ export default function Checkout() {
                 {/* Saved Address Book Selector */}
                 {savedAddresses.length > 0 && (
                   <div className="flex flex-col gap-2 border-b border-whisper pb-4">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-steel">Gunakan Alamat Tersimpan:</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-steel">Use Saved Address:</span>
                     <div className="flex flex-wrap gap-2">
                       {savedAddresses.map((addr, idx) => (
                         <button
@@ -303,23 +303,23 @@ export default function Checkout() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Nama Penerima *</label>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Recipient Name *</label>
                     <input 
                       type="text"
                       value={recipientName}
                       onChange={(e) => setRecipientName(e.target.value)}
-                      placeholder="NAMA LENGKAP"
+                      placeholder="FULL NAME"
                       className="w-full bg-white border border-whisper px-4 py-3 text-xs uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold"
                       required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Nomor Telepon *</label>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Phone Number *</label>
                     <input 
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="CONTOH: 08123456789"
+                      placeholder="EG: 08123456789"
                       className="w-full bg-white border border-whisper px-4 py-3 text-xs uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold"
                       required
                     />
@@ -327,11 +327,11 @@ export default function Checkout() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">Alamat Lengkap *</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">Street Address *</label>
                   <textarea 
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="NAMA JALAN, NOMOR RUMAH, KECAMATAN, KELURAHAN"
+                    placeholder="STREET NAME, HOUSE NUMBER, SUB-DISTRICT"
                     rows={3}
                     className="w-full bg-white border border-whisper px-4 py-3 text-xs uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold resize-none"
                     required
@@ -340,23 +340,23 @@ export default function Checkout() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Kota *</label>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">City *</label>
                     <input 
                       type="text"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      placeholder="KOTA / KABUPATEN"
+                      placeholder="CITY / REGENCY"
                       className="w-full bg-white border border-whisper px-4 py-3 text-xs uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold"
                       required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Kode Pos *</label>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-steel">Postal Code *</label>
                     <input 
                       type="text"
                       value={postalCode}
                       onChange={(e) => setPostalCode(e.target.value)}
-                      placeholder="KODE POS"
+                      placeholder="POSTAL CODE"
                       className="w-full bg-white border border-whisper px-4 py-3 text-xs uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold"
                       required
                     />
@@ -365,7 +365,7 @@ export default function Checkout() {
 
                 <div className="flex flex-col gap-3 mt-2">
                   <label className="text-[9px] font-black uppercase tracking-widest text-steel flex items-center gap-1">
-                    <Truck size={14} weight="bold" /> Metode Pengiriman
+                    <Truck size={14} weight="bold" /> Shipping Method
                   </label>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -378,9 +378,9 @@ export default function Checkout() {
                     >
                       <div className="flex justify-between items-start">
                         <span className="text-xs font-black uppercase tracking-wider">Eco Courier</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 border border-emerald-200">GRATIS</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 border border-emerald-200">FREE</span>
                       </div>
-                      <span className="text-[9px] text-steel font-bold uppercase tracking-wider">Estimasi Pengiriman: 3-5 Hari Kerja</span>
+                      <span className="text-[9px] text-steel font-bold uppercase tracking-wider">Estimated Delivery: 3-5 Business Days</span>
                     </div>
 
                     {/* Priority Express Option */}
@@ -394,20 +394,20 @@ export default function Checkout() {
                         <span className="text-xs font-black uppercase tracking-wider">Priority Express</span>
                         <span className="text-[10px] font-black text-black">Rp 20.000</span>
                       </div>
-                      <span className="text-[9px] text-steel font-bold uppercase tracking-wider">Estimasi Pengiriman: 1-2 Hari Kerja</span>
+                      <span className="text-[9px] text-steel font-bold uppercase tracking-wider">Estimated Delivery: 1-2 Business Days</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[9px] font-black uppercase tracking-widest text-steel flex items-center gap-1">
-                    <Notebook size={14} weight="bold" /> Catatan Pengiriman (Opsional)
+                    <Notebook size={14} weight="bold" /> Delivery Notes (Optional)
                   </label>
                   <input 
                     type="text"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="TITIP DI POS SATPAM / NOMOR RUMAH PAGAR HITAM"
+                    placeholder="E.G. LEAVE WITH SECURITY / GATE COLOR"
                     className="w-full bg-white border border-whisper px-4 py-3 text-xs uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold"
                   />
                 </div>
@@ -422,18 +422,18 @@ export default function Checkout() {
                       className="w-4 h-4 accent-black border-whisper cursor-pointer"
                     />
                     <span className="text-[9px] font-black uppercase tracking-widest text-steel">
-                      Simpan alamat ini untuk pembelian berikutnya
+                      Save this address for future purchases
                     </span>
                   </label>
                   
                   {saveAddressChecked && (
                     <div className="flex flex-col gap-1.5 pl-6">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-steel">Label Alamat (Misal: Rumah, Kantor) *</label>
+                      <label className="text-[8px] font-black uppercase tracking-widest text-steel">Address Label (e.g. Home, Office) *</label>
                       <input 
                         type="text"
                         value={addressLabel}
                         onChange={(e) => setAddressLabel(e.target.value)}
-                        placeholder="MISAL: RUMAH / KANTOR"
+                        placeholder="E.G. HOME / OFFICE"
                         className="w-full max-w-xs bg-white border border-whisper px-3 py-2 text-[10px] uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none font-bold"
                         required={saveAddressChecked}
                       />
@@ -446,7 +446,7 @@ export default function Checkout() {
               {/* Order Summary Sidebar */}
               <div className="lg:col-span-5 bg-white border border-whisper p-6 sm:p-8 flex flex-col gap-6 lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 border-b border-whisper pb-3 text-xs font-black uppercase tracking-widest text-black">
-                  <Receipt size={16} weight="bold" /> Ringkasan Keranjang
+                  <Receipt size={16} weight="bold" /> Cart Summary
                 </div>
 
                 <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
@@ -460,7 +460,7 @@ export default function Checkout() {
                         </div>
                         <div className="flex justify-between items-center text-[9px] text-steel font-black uppercase tracking-widest">
                           <span>
-                            {item.selectedColor && `WARNA: ${item.selectedColor}`}
+                            {item.selectedColor && `COLOR: ${item.selectedColor}`}
                             {item.selectedColor && item.selectedSize ? ' | ' : ''}
                             {item.selectedSize ? `SIZE: ${item.selectedSize}` : ''}
                           </span>
@@ -473,13 +473,13 @@ export default function Checkout() {
 
                 {/* Promo Code Input Box */}
                 <div className="border-t border-whisper pt-4 flex flex-col gap-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">KODE VOUCHER / PROMO</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">PROMO / VOUCHER CODE</label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
                       value={promoInput}
                       onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                      placeholder="KODE PROMO"
+                      placeholder="PROMO CODE"
                       disabled={appliedPromo !== ''}
                       className="flex-1 bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider focus:outline-none focus:border-black transition-colors rounded-none disabled:opacity-50 font-mono"
                     />
@@ -495,7 +495,7 @@ export default function Checkout() {
                         }}
                         className="bg-black text-white px-4 py-2.5 text-[9px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors cursor-pointer"
                       >
-                        Hapus
+                        Remove
                       </button>
                     ) : (
                       <button
@@ -503,7 +503,7 @@ export default function Checkout() {
                         onClick={handleApplyPromo}
                         className="bg-black text-white px-4 py-2.5 text-[9px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors cursor-pointer"
                       >
-                        Gunakan
+                        Apply
                       </button>
                     )}
                   </div>
@@ -520,25 +520,25 @@ export default function Checkout() {
                     <span className="text-black">Rp {subtotal.toLocaleString('id-ID')}</span>
                   </div>
                   <div className="flex justify-between items-center text-steel">
-                    <span>Ongkos Kirim ({shippingMethod === 'Priority' ? 'Priority' : 'Eco'})</span>
-                    <span className="text-black">{shippingCost === 0 ? 'GRATIS' : `Rp ${shippingCost.toLocaleString('id-ID')}`}</span>
+                    <span>Shipping ({shippingMethod === 'Priority' ? 'Priority' : 'Eco'})</span>
+                    <span className="text-black">{shippingCost === 0 ? 'FREE' : `Rp ${shippingCost.toLocaleString('id-ID')}`}</span>
                   </div>
                   <div className="flex justify-between items-center text-steel">
-                    <span>Biaya Layanan</span>
+                    <span>Service Fee</span>
                     <span className="text-black">Rp {serviceFee.toLocaleString('id-ID')}</span>
                   </div>
                   
                   {/* Promo Code Deduction Row */}
                   {discountAmount > 0 && (
                     <div className="flex justify-between items-center text-emerald-700">
-                      <span>Potongan Promo ({appliedPromo})</span>
+                      <span>Promo Discount ({appliedPromo})</span>
                       <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
                     </div>
                   )}
 
                   <div className="h-px bg-whisper my-2"></div>
                   <div className="flex justify-between items-center text-sm font-black">
-                    <span className="text-black">Total Pembayaran</span>
+                    <span className="text-black">Grand Total</span>
                     <span className="text-black">Rp {grandTotal.toLocaleString('id-ID')}</span>
                   </div>
                 </div>
@@ -547,7 +547,7 @@ export default function Checkout() {
                   type="submit"
                   className="w-full bg-black text-white py-4.5 font-black uppercase tracking-widest text-xs hover:bg-neutral-900 transition-colors flex items-center justify-center gap-2 mt-4 cursor-pointer"
                 >
-                  Proses Pesanan & Bayar
+                  Place Order & Pay
                 </button>
               </div>
             </div>
@@ -566,13 +566,13 @@ export default function Checkout() {
                 {/* Back Link & Print Action (hidden during print) */}
                 <div className="w-full max-w-xl mb-6 flex justify-between items-center print:hidden">
                   <Link to="/orders" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-steel hover:text-ink transition-colors">
-                    <ArrowLeft size={14} weight="bold" /> Riwayat Pesanan
+                    <ArrowLeft size={14} weight="bold" /> Order History
                   </Link>
                   <button 
                     onClick={handlePrint}
                     className="flex items-center gap-1.5 bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-all cursor-pointer"
                   >
-                    <Printer size={14} weight="bold" /> Cetak Nota
+                    <Printer size={14} weight="bold" /> Print Invoice
                   </button>
                 </div>
 
@@ -584,20 +584,20 @@ export default function Checkout() {
                     <h1 className="text-2xl font-black tracking-[0.25em] uppercase text-black">SAFTHOO STORE</h1>
                     <p className="text-[8px] text-steel font-black uppercase tracking-widest mt-1">SaaS E-Commerce Premium Store | Jakarta, Indonesia</p>
                     <div className="mt-4 border border-black px-4 py-1 text-[10px] font-black uppercase tracking-widest bg-black text-white">
-                      NOTA PEMBELIAN LUNAS
+                      OFFICIAL PAID RECEIPT
                     </div>
                   </div>
 
                   {/* Meta Details */}
                   <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-widest text-black border-b border-whisper pb-4 mb-4">
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-steel">NOMOR INVOICE:</span>
+                      <span className="text-steel">INVOICE NUMBER:</span>
                       <span className="font-black text-black">INV/{new Date().getFullYear()}{String(new Date().getMonth() + 1).padStart(2, '0')}{String(new Date().getDate()).padStart(2, '0')}/SFH/{orderId?.slice(0, 8).toUpperCase()}</span>
                     </div>
                     <div className="flex flex-col gap-1.5 text-right">
-                      <span className="text-steel">TANGGAL TRANSAKSI:</span>
+                      <span className="text-steel">TRANSACTION DATE:</span>
                       <span className="font-black text-black">
-                        {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} | {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })} | {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   </div>
@@ -605,23 +605,23 @@ export default function Checkout() {
                   {/* Customer & Shipping Section */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[10px] font-bold uppercase tracking-wider border-b border-whisper pb-6 mb-6">
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-steel font-black tracking-widest text-[9px] border-b border-whisper pb-1 mb-1">DATA PENERIMA</span>
+                      <span className="text-steel font-black tracking-widest text-[9px] border-b border-whisper pb-1 mb-1">RECIPIENT DETAILS</span>
                       <span className="font-black text-black text-xs">{savedShipping?.recipientName}</span>
                       <span className="text-steel">TELP: {savedShipping?.phone}</span>
                       <span className="text-steel">EMAIL: {user?.email}</span>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-steel font-black tracking-widest text-[9px] border-b border-whisper pb-1 mb-1">ALAMAT PENGIRIMAN</span>
+                      <span className="text-steel font-black tracking-widest text-[9px] border-b border-whisper pb-1 mb-1">SHIPPING ADDRESS</span>
                       <span className="text-black leading-relaxed">{savedShipping?.address}</span>
                       <span className="text-black">{savedShipping?.city}, {savedShipping?.postalCode}</span>
-                      <span className="font-black text-black mt-1">KURIR: {savedShipping?.shippingMethod}</span>
-                      {savedNotes && <span className="text-steel text-[9px] italic mt-1 font-medium">CATATAN: "{savedNotes}"</span>}
+                      <span className="font-black text-black mt-1">COURIER: {savedShipping?.shippingMethod}</span>
+                      {savedNotes && <span className="text-steel text-[9px] italic mt-1 font-medium">NOTES: "{savedNotes}"</span>}
                     </div>
                   </div>
 
                   {/* Table of Items */}
                   <div className="flex flex-col gap-3 mb-6">
-                    <span className="text-steel font-black tracking-widest text-[9px] border-b border-black pb-1 mb-1">RINCIAN BARANG</span>
+                    <span className="text-steel font-black tracking-widest text-[9px] border-b border-black pb-1 mb-1">ITEM DETAILS</span>
                     
                     <div className="flex flex-col gap-3">
                       {purchasedItems.map((item, idx) => (
@@ -631,7 +631,7 @@ export default function Checkout() {
                               {item.name}
                             </span>
                             <span className="text-[9px] text-steel font-black uppercase tracking-widest mt-0.5">
-                              {item.selectedColor && `WARNA: ${item.selectedColor}`}
+                              {item.selectedColor && `COLOR: ${item.selectedColor}`}
                               {item.selectedColor && item.selectedSize ? ' | ' : ''}
                               {item.selectedSize ? `SIZE: ${item.selectedSize}` : ''}
                               {` | QTY: ${item.quantity}`}
@@ -648,32 +648,32 @@ export default function Checkout() {
                   {/* Cost Breakdown */}
                   <div className="bg-surface border border-whisper p-5 flex flex-col gap-2.5 text-xs font-bold uppercase tracking-widest border-t border-black pt-4 mb-6">
                     <div className="flex justify-between text-steel">
-                      <span>SUBTOTAL BELANJA</span>
+                      <span>SUBTOTAL</span>
                       <span className="text-black font-black">Rp {savedSubtotal.toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex justify-between text-steel">
-                      <span>ONGKOS KIRIM</span>
+                      <span>SHIPPING</span>
                       <span className="text-black font-black">
-                        {savedShipping?.shippingCost === 0 ? 'GRATIS' : `Rp ${savedShipping?.shippingCost.toLocaleString('id-ID')}`}
+                        {savedShipping?.shippingCost === 0 ? 'FREE' : `Rp ${savedShipping?.shippingCost.toLocaleString('id-ID')}`}
                       </span>
                     </div>
                     <div className="flex justify-between text-steel">
-                      <span>BIAYA LAYANAN</span>
+                      <span>SERVICE FEE</span>
                       <span className="text-black font-black">Rp {serviceFee.toLocaleString('id-ID')}</span>
                     </div>
                     {discountAmount > 0 && (
                       <div className="flex justify-between text-emerald-700">
-                        <span>POTONGAN PROMO ({appliedPromo})</span>
+                        <span>PROMO DISCOUNT ({appliedPromo})</span>
                         <span className="font-black">-Rp {discountAmount.toLocaleString('id-ID')}</span>
                       </div>
                     )}
                     <div className="h-px bg-whisper my-1"></div>
                     <div className="flex justify-between text-sm font-black pt-1">
-                      <span className="text-black">TOTAL PEMBAYARAN</span>
+                      <span className="text-black">TOTAL AMOUNT</span>
                       <span className="text-black text-base">Rp {checkoutAmount.toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex justify-between text-[9px] text-steel/80 pt-2 border-t border-whisper/50 font-bold">
-                      <span>METODE PEMBAYARAN:</span>
+                      <span>PAYMENT METHOD:</span>
                       <span className="text-black font-black">QRIS (SAFTHOO PAY)</span>
                     </div>
                   </div>
@@ -681,8 +681,8 @@ export default function Checkout() {
                   {/* Footer Terms / Message */}
                   <div className="flex flex-col items-center text-center border-t border-whisper pt-6 mt-4 gap-4">
                     <div className="flex flex-col gap-1">
-                      <p className="text-[9px] font-black uppercase tracking-wider text-black">TERIMA KASIH TELAH BERBELANJA DI SAFTHOO</p>
-                      <p className="text-[8px] text-steel font-bold uppercase tracking-widest leading-relaxed max-w-xs">Pesanan Anda telah dikonfirmasi dan sedang dipersiapkan untuk diserahkan ke kurir pengiriman.</p>
+                      <p className="text-[9px] font-black uppercase tracking-wider text-black">THANK YOU FOR SHOPPING AT SAFTHOO</p>
+                      <p className="text-[8px] text-steel font-bold uppercase tracking-widest leading-relaxed max-w-xs">Your order has been confirmed and is being prepared for shipment.</p>
                     </div>
 
                     {/* Simulated Barcode */}
@@ -705,28 +705,28 @@ export default function Checkout() {
                 {/* Final Actions */}
                 <div className="w-full max-w-xl mt-6 flex flex-col gap-3 print:hidden">
                   <Link to="/orders" className="w-full bg-black text-white py-4.5 font-black uppercase tracking-widest text-xs hover:bg-neutral-900 transition-colors flex items-center justify-center">
-                    Lihat Semua Pesanan Anda
+                    View Your Orders
                   </Link>
                   <Link to="/" className="w-full bg-white border border-whisper text-black py-4 font-black uppercase tracking-widest text-xs hover:bg-surface transition-colors flex items-center justify-center">
-                    Kembali Belanja
+                    Continue Shopping
                   </Link>
                 </div>
               </div>
             ) : (
               /* ==================== QRIS SCANNING STEP ==================== */
               <div className="w-full max-w-md bg-white border border-whisper p-8 flex flex-col items-center text-center">
-                <h1 className="text-lg font-black uppercase tracking-widest mb-2">Selesaikan Pembayaran</h1>
-                <p className="text-steel text-[10px] font-bold uppercase tracking-wider mb-6">Scan QRIS di bawah dengan m-Banking atau e-Wallet Anda.</p>
+                <h1 className="text-lg font-black uppercase tracking-widest mb-2">Complete Your Payment</h1>
+                <p className="text-steel text-[10px] font-bold uppercase tracking-wider mb-6">Scan the QRIS code below using your banking or e-wallet app.</p>
                 
                 {/* Minimalist QRIS Box */}
                 <div className="w-48 h-48 bg-white border border-whisper flex flex-col items-center justify-center text-steel mb-6 p-4">
                   <QrCode size={96} weight="bold" className="text-black" />
-                  <span className="text-[9px] font-black mt-3 tracking-widest uppercase text-steel">QRIS SIMULASI</span>
+                  <span className="text-[9px] font-black mt-3 tracking-widest uppercase text-steel">SIMULATED QRIS</span>
                 </div>
 
                 {/* Recipient summary for confirmation */}
                 <div className="w-full border-t border-b border-whisper/80 py-4 mb-6 flex flex-col gap-2 text-left text-[9px] font-bold uppercase tracking-wider">
-                  <span className="text-steel font-black tracking-widest border-b border-whisper/50 pb-1 mb-1">PENGIRIMAN KEPADA:</span>
+                  <span className="text-steel font-black tracking-widest border-b border-whisper/50 pb-1 mb-1">SHIP TO:</span>
                   <div className="flex justify-between">
                     <span className="text-black font-black">{savedShipping?.recipientName}</span>
                     <span className="text-steel">{savedShipping?.phone}</span>
@@ -735,7 +735,7 @@ export default function Checkout() {
                 </div>
 
                 <div className="w-full bg-surface border border-whisper p-4 mb-6 flex justify-between items-center text-xs font-black uppercase tracking-widest">
-                  <span className="text-steel">Total Tagihan</span>
+                  <span className="text-steel">Total Bill</span>
                   <span className="text-sm text-black">Rp {checkoutAmount.toLocaleString('id-ID')}</span>
                 </div>
 
@@ -743,9 +743,9 @@ export default function Checkout() {
                   onClick={() => simulatePaymentSuccess(paymentData.id, orderId!)}
                   className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-xs hover:bg-neutral-900 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <CheckCircle weight="bold" size={16} /> Simulasikan Bayar Sukses
+                  <CheckCircle weight="bold" size={16} /> Simulate Payment Success
                 </button>
-                <p className="text-[8px] text-steel font-bold uppercase tracking-widest mt-4">Status diperbarui secara real-time via Firestore</p>
+                <p className="text-[8px] text-steel font-bold uppercase tracking-widest mt-4">Status updated in real-time via Firestore</p>
               </div>
             )}
           </div>

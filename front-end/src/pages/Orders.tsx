@@ -70,7 +70,7 @@ export default function Orders() {
         const fullOrders = await Promise.all(paymentPromises);
         setOrders(fullOrders);
       } catch (error) {
-        console.error("Gagal mengambil data pesanan secara real-time", error);
+        console.error("Failed to retrieve order data in real-time", error);
       } finally {
         setIsLoading(false);
       }
@@ -99,7 +99,7 @@ export default function Orders() {
         const items = snap.docs.map(doc => doc.data());
         setOrderItemsMap(prev => ({ ...prev, [orderId]: items }));
       } catch (err) {
-        console.error("Gagal mengambil rincian barang pesanan", err);
+        console.error("Failed to retrieve order item details", err);
       } finally {
         setLoadingItemsMap(prev => ({ ...prev, [orderId]: false }));
       }
@@ -129,15 +129,15 @@ export default function Orders() {
           <Link to="/" className="p-2 -ml-2 text-steel hover:text-ink transition-colors">
             <ArrowLeft size={18} weight="bold" />
           </Link>
-          <h1 className="text-base font-black uppercase tracking-widest">RIWAYAT TRANSAKSI</h1>
+          <h1 className="text-base font-black uppercase tracking-widest">TRANSACTION HISTORY</h1>
         </div>
       </header>
 
       {/* Orders List Section (Hidden during print) */}
       <section className="max-w-2xl mx-auto p-6 flex flex-col gap-6 print:hidden">
         <div className="mb-4">
-          <h2 className="text-xl font-black uppercase tracking-widest text-ink">Semua Pesanan</h2>
-          <p className="text-[10px] text-steel mt-1 font-bold uppercase tracking-widest">Lacak status pembayaran, alamat pengiriman, dan cetak nota belanja Anda secara instan.</p>
+          <h2 className="text-xl font-black uppercase tracking-widest text-ink">All Orders</h2>
+          <p className="text-[10px] text-steel mt-1 font-bold uppercase tracking-widest">Track your payment status, shipping address, and print your invoices instantly.</p>
         </div>
 
         {isLoading ? (
@@ -149,10 +149,10 @@ export default function Orders() {
         ) : orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center border border-whisper bg-white p-8">
             <Package size={36} className="text-steel mb-4 opacity-40 animate-pulse" />
-            <h3 className="text-xs font-black uppercase tracking-widest mb-1">Belum Ada Transaksi</h3>
-            <p className="text-steel text-[10px] mb-6 max-w-xs leading-relaxed uppercase font-bold tracking-wider">Anda belum melakukan pembelian apa pun.</p>
+            <h3 className="text-xs font-black uppercase tracking-widest mb-1">No Transactions Yet</h3>
+            <p className="text-steel text-[10px] mb-6 max-w-xs leading-relaxed uppercase font-bold tracking-wider">You have not made any purchases yet.</p>
             <Link to="/" className="bg-black text-white px-6 py-3.5 font-bold text-xs uppercase tracking-widest hover:bg-neutral-900 transition-colors">
-              Kembali ke Katalog
+              BACK TO CATALOG
             </Link>
           </div>
         ) : (
@@ -199,7 +199,7 @@ export default function Orders() {
                           Rp {order.total_amount.toLocaleString('id-ID')}
                         </span>
                         <span className="text-[10px] text-steel font-bold uppercase tracking-widest">
-                          {new Date(order.created_at).toLocaleDateString('id-ID', {
+                          {new Date(order.created_at).toLocaleDateString('en-US', {
                             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                           })}
                         </span>
@@ -210,12 +210,12 @@ export default function Orders() {
                       {order.paymentStatus === 'paid' ? (
                         <span className="flex items-center gap-1.5 bg-surface text-black px-3 py-1.5 text-[10px] font-black uppercase tracking-widest border border-whisper">
                           <CheckCircle weight="bold" size={13} />
-                          Lunas
+                          PAID
                         </span>
                       ) : (
                         <span className="flex items-center gap-1.5 bg-surface text-amber-700 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest border border-whisper border-amber-200">
                           <Clock weight="bold" size={13} />
-                          Menunggu
+                          PENDING
                         </span>
                       )}
                       
@@ -240,30 +240,30 @@ export default function Orders() {
                           {/* Shipping Details */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-whisper pb-4">
                             <div className="flex flex-col gap-1.5">
-                              <span className="text-steel font-black tracking-widest text-[9px]">Penerima & Alamat</span>
+                              <span className="text-steel font-black tracking-widest text-[9px]">Recipient & Address</span>
                               <span className="font-black text-xs text-black">{recipientName}</span>
                               <span className="text-steel leading-relaxed">{address}</span>
                               <span className="text-steel">{city} {postalCode}</span>
                             </div>
                             <div className="flex flex-col gap-1.5 sm:text-right sm:items-end">
-                              <span className="text-steel font-black tracking-widest text-[9px]">Kontak & Kurir</span>
+                              <span className="text-steel font-black tracking-widest text-[9px]">Contact & Courier</span>
                               <span className="text-black flex items-center gap-1"><Phone size={12} /> {phone}</span>
                               <span className="text-black flex items-center gap-1"><Truck size={12} /> {shippingMethod}</span>
-                              {order.notes && <span className="text-steel text-[9px] italic font-medium mt-1">"Catatan: {order.notes}"</span>}
+                              {order.notes && <span className="text-steel text-[9px] italic font-medium mt-1">"Notes: {order.notes}"</span>}
                             </div>
                           </div>
 
                           {/* Items Detail */}
                           <div className="flex flex-col gap-2.5">
-                            <span className="text-steel font-black tracking-widest text-[9px]">Daftar Pembelian</span>
+                            <span className="text-steel font-black tracking-widest text-[9px]">Item Details</span>
                             
                             {itemsLoading ? (
                               <div className="flex items-center gap-2 py-2">
                                 <div className="w-4 h-4 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
-                                <span className="text-steel text-[9px] uppercase tracking-widest animate-pulse">Memuat barang...</span>
+                                <span className="text-steel text-[9px] uppercase tracking-widest animate-pulse">Loading items...</span>
                               </div>
                             ) : items.length === 0 ? (
-                              <span className="text-steel text-[9px] italic">Tidak ada rincian barang ditemukan</span>
+                              <span className="text-steel text-[9px] italic">No item details found</span>
                             ) : (
                               <div className="flex flex-col gap-3">
                                 {items.map((item, i) => (
@@ -271,7 +271,7 @@ export default function Orders() {
                                     <div className="flex flex-col">
                                       <span className="font-black text-black">{item.product_name}</span>
                                       <span className="text-[9px] text-steel font-black tracking-widest mt-0.5">
-                                        {item.color && `WARNA: ${item.color}`}
+                                        {item.color && `COLOR: ${item.color}`}
                                         {item.color && item.size ? ' | ' : ''}
                                         {item.size ? `SIZE: ${item.size}` : ''}
                                         {` | QTY: ${item.quantity}`}
@@ -293,16 +293,16 @@ export default function Orders() {
                               <span className="text-black font-black">Rp {subtotalAmount.toLocaleString('id-ID')}</span>
                             </div>
                             <div className="flex justify-between text-steel">
-                              <span>Ongkos Kirim</span>
-                              <span className="text-black font-black">{shippingCost === 0 ? 'GRATIS' : `Rp ${shippingCost.toLocaleString('id-ID')}`}</span>
+                              <span>Shipping Cost</span>
+                              <span className="text-black font-black">{shippingCost === 0 ? 'FREE' : `Rp ${shippingCost.toLocaleString('id-ID')}`}</span>
                             </div>
                             <div className="flex justify-between text-steel">
-                              <span>Biaya Layanan</span>
+                              <span>Service Fee</span>
                               <span className="text-black font-black">Rp {serviceFee.toLocaleString('id-ID')}</span>
                             </div>
                             <div className="h-px bg-whisper my-1"></div>
                             <div className="flex justify-between text-xs font-black pt-0.5">
-                              <span>Total Bayar</span>
+                              <span>Grand Total</span>
                               <span className="text-sm text-black">Rp {order.total_amount.toLocaleString('id-ID')}</span>
                             </div>
                           </div>
@@ -313,7 +313,7 @@ export default function Orders() {
                               onClick={() => handlePrintOrder(order, items)}
                               className="w-full bg-black text-white py-3.5 font-black uppercase tracking-widest text-[9px] hover:bg-neutral-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                             >
-                              <Printer size={14} weight="bold" /> Cetak Nota Belanja
+                              <Printer size={14} weight="bold" /> Print Invoice
                             </button>
                           )}
 
@@ -337,20 +337,20 @@ export default function Orders() {
             <h1 className="text-2xl font-black tracking-[0.25em] uppercase">SAFTHOO STORE</h1>
             <p className="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-1">SaaS E-Commerce Premium Store | Jakarta, Indonesia</p>
             <div className="mt-4 border border-black px-4 py-1 text-[10px] font-black uppercase tracking-widest bg-black text-white">
-              NOTA PEMBELIAN LUNAS
+              OFFICIAL PAID RECEIPT
             </div>
           </div>
 
           {/* Meta Info */}
           <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase tracking-widest border-b border-gray-200 pb-4 mb-4">
             <div className="flex flex-col gap-1.5">
-              <span>NOMOR INVOICE:</span>
+              <span>INVOICE NUMBER:</span>
               <span className="font-black">INV/{new Date(printOrder.created_at).getFullYear()}{String(new Date(printOrder.created_at).getMonth() + 1).padStart(2, '0')}{String(new Date(printOrder.created_at).getDate()).padStart(2, '0')}/SFH/{printOrder.id.slice(0, 8).toUpperCase()}</span>
             </div>
             <div className="flex flex-col gap-1.5 text-right">
-              <span>TANGGAL TRANSAKSI:</span>
+              <span>TRANSACTION DATE:</span>
               <span className="font-black">
-                {new Date(printOrder.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} | {new Date(printOrder.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                {new Date(printOrder.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })} | {new Date(printOrder.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>
@@ -358,23 +358,23 @@ export default function Orders() {
           {/* Address Details */}
           <div className="grid grid-cols-2 gap-6 text-[10px] font-bold uppercase tracking-wider border-b border-gray-200 pb-6 mb-6">
             <div className="flex flex-col gap-1.5">
-              <span className="text-gray-500 font-black tracking-widest text-[9px] border-b border-gray-200 pb-1 mb-1">DATA PENERIMA</span>
-              <span className="font-black text-xs">{printOrder.recipient_name || user?.displayName || 'PELANGGAN SAFTHOO'}</span>
+              <span className="text-gray-500 font-black tracking-widest text-[9px] border-b border-gray-200 pb-1 mb-1">RECIPIENT DETAILS</span>
+              <span className="font-black text-xs">{printOrder.recipient_name || user?.displayName || 'SAFTHOO CUSTOMER'}</span>
               <span>TELP: {printOrder.phone || '-'}</span>
               <span>EMAIL: {user?.email}</span>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-gray-500 font-black tracking-widest text-[9px] border-b border-gray-200 pb-1 mb-1">ALAMAT PENGIRIMAN</span>
-              <span className="leading-relaxed">{printOrder.address || 'ALAMAT TIDAK TERCATAT'}</span>
+              <span className="text-gray-500 font-black tracking-widest text-[9px] border-b border-gray-200 pb-1 mb-1">SHIPPING ADDRESS</span>
+              <span className="leading-relaxed">{printOrder.address || 'NO ADDRESS RECORDED'}</span>
               <span>{printOrder.city || ''}, {printOrder.postal_code || ''}</span>
-              <span className="font-black mt-1">KURIR: {printOrder.shipping_method || 'Eco Courier'}</span>
-              {printOrder.notes && <span className="text-gray-500 text-[9px] italic mt-1 font-medium">CATATAN: "{printOrder.notes}"</span>}
+              <span className="font-black mt-1">COURIER: {printOrder.shipping_method || 'Eco Courier'}</span>
+              {printOrder.notes && <span className="text-gray-500 text-[9px] italic mt-1 font-medium">NOTES: "{printOrder.notes}"</span>}
             </div>
           </div>
 
           {/* Items Table */}
           <div className="flex flex-col gap-3 mb-6">
-            <span className="text-gray-500 font-black tracking-widest text-[9px] border-b border-black pb-1 mb-1">RINCIAN BARANG</span>
+            <span className="text-gray-500 font-black tracking-widest text-[9px] border-b border-black pb-1 mb-1">ITEM DETAILS</span>
             
             <div className="flex flex-col gap-3">
               {printItems.map((item, idx) => (
@@ -382,7 +382,7 @@ export default function Orders() {
                   <div className="flex flex-col">
                     <span className="font-black uppercase tracking-wider">{item.product_name}</span>
                     <span className="text-[9px] text-gray-500 font-black tracking-widest mt-0.5">
-                      {item.color && `WARNA: ${item.color}`}
+                      {item.color && `COLOR: ${item.color}`}
                       {item.color && item.size ? ' | ' : ''}
                       {item.size ? `SIZE: ${item.size}` : ''}
                       {` | QTY: ${item.quantity}`}
@@ -399,26 +399,26 @@ export default function Orders() {
           {/* Money Math */}
           <div className="bg-gray-50 border border-gray-200 p-5 flex flex-col gap-2.5 text-xs font-bold uppercase tracking-widest border-t border-black pt-4 mb-6">
             <div className="flex justify-between text-gray-500">
-              <span>SUBTOTAL BELANJA</span>
+              <span>SUBTOTAL</span>
               <span className="font-black text-black">Rp {(printOrder.subtotal_amount ?? (printOrder.total_amount - (printOrder.shipping_cost ?? 0) - (printOrder.service_fee ?? 0))).toLocaleString('id-ID')}</span>
             </div>
             <div className="flex justify-between text-gray-500">
-              <span>ONGKOS KIRIM</span>
+              <span>SHIPPING</span>
               <span className="font-black text-black">
-                {printOrder.shipping_cost === 0 ? 'GRATIS' : `Rp ${(printOrder.shipping_cost ?? 0).toLocaleString('id-ID')}`}
+                {printOrder.shipping_cost === 0 ? 'FREE' : `Rp ${(printOrder.shipping_cost ?? 0).toLocaleString('id-ID')}`}
               </span>
             </div>
             <div className="flex justify-between text-gray-500">
-              <span>BIAYA LAYANAN</span>
+              <span>SERVICE FEE</span>
               <span className="font-black text-black">Rp {(printOrder.service_fee ?? 0).toLocaleString('id-ID')}</span>
             </div>
             <div className="h-px bg-gray-200 my-1"></div>
             <div className="flex justify-between text-sm font-black pt-1">
-              <span>TOTAL PEMBAYARAN</span>
+              <span>TOTAL AMOUNT</span>
               <span className="text-base">Rp {printOrder.total_amount.toLocaleString('id-ID')}</span>
             </div>
             <div className="flex justify-between text-[9px] text-gray-500 pt-2 border-t border-gray-200 font-bold">
-              <span>METODE PEMBAYARAN:</span>
+              <span>PAYMENT METHOD:</span>
               <span className="font-black text-black">QRIS (SAFTHOO PAY)</span>
             </div>
           </div>
@@ -426,8 +426,8 @@ export default function Orders() {
           {/* Footer Receipt Message */}
           <div className="flex flex-col items-center text-center border-t border-gray-200 pt-6 mt-4 gap-4">
             <div className="flex flex-col gap-1">
-              <p className="text-[9px] font-black uppercase tracking-wider">TERIMA KASIH TELAH BERBELANJA DI SAFTHOO</p>
-              <p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed max-w-xs">Pesanan Anda telah dikonfirmasi dan sedang dipersiapkan untuk diserahkan ke kurir pengiriman.</p>
+              <p className="text-[9px] font-black uppercase tracking-wider">THANK YOU FOR SHOPPING AT SAFTHOO</p>
+              <p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed max-w-xs">Your order has been confirmed and is being prepared for shipment.</p>
             </div>
 
             {/* Simulated Barcode */}

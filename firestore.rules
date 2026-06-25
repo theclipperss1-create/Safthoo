@@ -1,16 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if the authenticated user is the authorized owner (admin)
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.email == 'gilankdev@gmail.com';
+    }
+
     match /products/{productId} {
       allow read: if true;
-      allow update: if request.auth != null && request.resource.data.diff(resource.data).changedKeys().hasOnly(['stock_qty']);
-      allow create, delete: if false;
+      allow update: if request.auth != null && (
+        request.resource.data.diff(resource.data).changedKeys().hasOnly(['stock_qty']) ||
+        isAdmin()
+      );
+      allow create, delete: if isAdmin();
     }
     
-    // Orders: Users can create and read their own orders.
+    // Orders: Users can create and read their own orders. Admins can read/update all orders.
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
-      allow read, update: if request.auth != null && resource.data.user_id == request.auth.uid;
+      allow read, update: if request.auth != null && (
+        resource.data.user_id == request.auth.uid ||
+        isAdmin()
+      );
     }
     
     // Order Items: Users can create/read.
@@ -34,10 +46,11 @@ service cloud.firestore {
       allow read, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
 
-    // Reviews: Publicly readable, authenticated creation with rating validation
+    // Reviews: Publicly readable, authenticated creation/management with rating validation
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if request.auth != null && request.resource.data.product_id != null && request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
+      allow create: if request.auth != null && request.resource.data.product_id != null && request.resource.data.rating >= 1 && request.resource.data.rating <= 5 && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
   }
 }

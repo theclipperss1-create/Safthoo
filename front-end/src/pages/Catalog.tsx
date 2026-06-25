@@ -54,7 +54,7 @@ export default function Catalog() {
   const handleAuthAction = () => {
     if (user) {
       signOut(auth);
-      toast.success('Berhasil keluar');
+      toast.success('Logged out successfully');
     } else {
       navigate('/login');
     }
@@ -64,7 +64,7 @@ export default function Catalog() {
     e.stopPropagation();
     if (product.stock_qty <= 0) return;
     addToCart(product, 1);
-    toast.success(`${product.name} masuk ke keranjang!`);
+    toast.success(`${product.name} added to cart.`);
   };
 
   const filteredProducts = products.filter(p => {
@@ -102,7 +102,7 @@ export default function Catalog() {
       {/* Promo Marquee Strip */}
       <div className="w-full bg-black text-white text-[9px] font-black tracking-[0.2em] py-2.5 text-center uppercase border-b border-whisper overflow-hidden whitespace-nowrap">
         <div className="inline-block animate-marquee">
-          GRATIS ONGKIR SELURUH INDONESIA • GARANSI PENGEMBALIAN 30 HARI • SINKRONISASI STOK REAL-TIME • 
+          FREE SHIPPING NATIONWIDE • 30-DAY RETURN GUARANTEE • REAL-TIME STOCK SYNC • 
         </div>
         <style>{`
           @keyframes marquee {
@@ -137,7 +137,7 @@ export default function Catalog() {
             <MagnifyingGlass className="text-steel" size={16} />
             <input 
               type="text" 
-              placeholder="Cari koleksi..." 
+              placeholder="Search collection..." 
               className="bg-transparent border-none outline-none text-xs w-full ml-2 text-ink placeholder:text-steel uppercase tracking-wider font-bold"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -149,7 +149,7 @@ export default function Catalog() {
               <button 
                 onClick={() => navigate('/orders')}
                 className="relative p-2 text-steel hover:text-ink hover:scale-105 transition-all cursor-pointer"
-                title="Riwayat Pesanan"
+                title="Order History"
               >
                 <Package size={20} weight="bold" />
               </button>
@@ -160,7 +160,7 @@ export default function Catalog() {
               <button 
                 onClick={() => setIsWishlistOpen(true)}
                 className="relative p-2 text-steel hover:text-ink hover:scale-105 transition-all cursor-pointer"
-                title="Daftar Keinginan"
+                title="Wishlist"
               >
                 <Heart size={20} weight="bold" />
                 {wishlistIds.length > 0 && (
@@ -180,7 +180,7 @@ export default function Catalog() {
             <button 
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-steel hover:text-ink hover:scale-105 transition-all cursor-pointer"
-              title="Keranjang Belanja"
+              title="Shopping Cart"
             >
               <ShoppingCart size={20} weight="bold" />
               {totalItems > 0 && (
@@ -199,7 +199,7 @@ export default function Catalog() {
               onClick={handleAuthAction}
               className="border border-black bg-white text-black px-4 py-2 hover:bg-black hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest ml-2 cursor-pointer"
             >
-              {user ? 'KELUAR' : 'MASUK'}
+              {user ? 'LOGOUT' : 'LOGIN'}
             </button>
           </div>
         </nav>
@@ -224,20 +224,20 @@ export default function Catalog() {
             >
               <div className="inline-flex items-center gap-2 border border-black px-3 py-1.5 self-start text-[8px] font-black uppercase tracking-[0.18em] bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.02)] select-none">
                 <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></span>
-                TERLARIS BULAN INI
+                BEST SELLER OF THE MONTH
               </div>
               <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] uppercase text-black select-none">
                 {heroProduct.name}
               </h2>
               <p className="text-steel text-xs md:text-sm font-bold leading-relaxed max-w-sm uppercase tracking-wider">
-                Didesain secara teknis dengan sol responsif serta material rajut kelas tinggi untuk menjamin performa tanpa kompromi.
+                Engineered with responsive cushioning and premium knit upper for uncompromising performance.
               </p>
               <div className="flex items-center gap-6 mt-4">
                 <button 
                   onClick={() => navigate(`/product/${heroProduct.id}`)}
                   className="bg-black text-white px-9 py-4.5 font-black uppercase tracking-widest text-[10px] hover:bg-neutral-900 transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-[1px]"
                 >
-                  BELANJA SEKARANG <ArrowRight size={14} weight="bold" />
+                  SHOP NOW <ArrowRight size={14} weight="bold" />
                 </button>
                 <span className="text-base font-black tracking-wider text-black">
                   Rp {heroProduct.current_price.toLocaleString('id-ID')}
@@ -260,7 +260,7 @@ export default function Catalog() {
                 className="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-[1200ms] ease-out"
               />
               <div className="absolute bottom-4 left-4 text-[8px] font-black uppercase tracking-widest bg-white text-black px-4 py-2 border border-whisper shadow-md z-20">
-                KLIK UNTUK DETAIL PRODUK
+                CLICK FOR DETAILS
               </div>
             </motion.div>
           </div>
@@ -271,8 +271,8 @@ export default function Catalog() {
       {!searchQuery && activeCategory === 'all' && (
         <section className="py-16 px-6 max-w-7xl w-full mx-auto">
           <div className="mb-8 text-left">
-            <span className="text-[9px] font-black tracking-widest text-steel uppercase">SOROTAN KOLEKSI</span>
-            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-ink mt-1">KATEGORI PILIHAN</h2>
+            <span className="text-[9px] font-black tracking-widest text-steel uppercase">COLLECTION SPOTLIGHT</span>
+            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-ink mt-1">FEATURED CATEGORIES</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -289,7 +289,7 @@ export default function Catalog() {
               <div className="absolute inset-0 bg-black/5 group-hover:bg-black/15 transition-colors"></div>
               <div className="absolute bottom-6 left-6 text-left">
                 <span className="bg-white text-black px-4 py-2 text-[9px] font-black uppercase tracking-widest border border-whisper shadow-sm">
-                  SNEAKERS CLASSIC
+                  CLASSIC SNEAKERS
                 </span>
               </div>
             </div>
@@ -348,12 +348,12 @@ export default function Catalog() {
             
             {/* Text Right */}
             <div className="w-full md:w-1/2 flex flex-col gap-4 text-left">
-              <span className="text-[9px] font-black tracking-widest text-steel uppercase">KAMPANYE BARU</span>
+              <span className="text-[9px] font-black tracking-widest text-steel uppercase">NEW CAMPAIGN</span>
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none text-ink">
                 THE NEW STREET MOVEMENT
               </h2>
               <p className="text-steel text-xs md:text-sm font-medium leading-relaxed max-w-md uppercase tracking-wider">
-                Rayakan kebebasan berekspresi di jalanan kota. Didesain menggunakan siluet klasik namun ditenagai material futuristik tahan lama.
+                Celebrate the freedom of urban expression. Designed with a classic silhouette powered by futuristic, durable materials.
               </p>
               <button 
                 onClick={() => {
@@ -362,7 +362,7 @@ export default function Catalog() {
                 }}
                 className="text-[9px] font-black uppercase tracking-widest text-ink hover:text-steel underline self-start cursor-pointer mt-2"
               >
-                Lihat Koleksi Jalanan
+                Explore Street Collection
               </button>
             </div>
           </div>
@@ -374,26 +374,26 @@ export default function Catalog() {
         <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
             <h1 className="text-3xl md:text-5xl font-black tracking-tight uppercase leading-none text-ink">
-              Katalog Koleksi
+              Collection Catalog
             </h1>
             <p className="text-steel text-[10px] font-bold uppercase tracking-widest mt-2">
-              Direkayasa demi kenyamanan urban modern
+              Engineered for modern urban comfort
             </p>
           </div>
           <div className="text-[10px] font-black uppercase tracking-widest text-steel">
-            MENAMPILKAN {filteredProducts.length} PRODUK
+            SHOWING {filteredProducts.length} PRODUCTS
           </div>
         </div>
 
         {/* Category Tabs */}
         <div className="flex items-center gap-6 overflow-x-auto pb-4 mb-8 sm:mb-12 -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none border-b border-whisper/40">
           {[
-            { id: 'all', label: 'SEMUA' },
+            { id: 'all', label: 'ALL' },
             { id: 'sneaker', label: 'SNEAKERS' },
             { id: 'runner', label: 'RUNNERS' },
             { id: 'loafer', label: 'LOAFERS' },
             { id: 'boot', label: 'BOOTS' },
-            { id: 'accessories', label: 'AKSESORIS' }
+            { id: 'accessories', label: 'ACCESSORIES' }
           ].map((cat) => {
             const isActive = activeCategory === cat.id;
             return (
@@ -426,7 +426,7 @@ export default function Catalog() {
         ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 border border-whisper border-dashed bg-white">
             <Package size={48} className="text-steel mb-4 opacity-40 animate-pulse" />
-            <p className="text-steel font-bold text-xs uppercase tracking-widest">Produk tidak ditemukan</p>
+            <p className="text-steel font-bold text-xs uppercase tracking-widest">No products found</p>
             {(searchQuery || activeCategory !== 'all') && (
               <button 
                 onClick={() => {
@@ -435,7 +435,7 @@ export default function Catalog() {
                 }} 
                 className="mt-4 border border-black px-5 py-2.5 hover:bg-black hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest cursor-pointer"
               >
-                Reset Filter
+                Reset Filters
               </button>
             )}
           </div>
@@ -473,9 +473,9 @@ export default function Catalog() {
                             try {
                               const added = await toggleWishlist(user.uid, product.id);
                               if (added) {
-                                toast.success(`${product.name} disimpan ke favorit`);
+                                toast.success(`${product.name} saved to wishlist`);
                               } else {
-                                toast.success(`${product.name} dihapus dari favorit`);
+                                toast.success(`${product.name} removed from wishlist`);
                               }
                             } catch (err) {
                               console.error("Gagal mengubah wishlist", err);
@@ -492,11 +492,11 @@ export default function Catalog() {
                       )}
                       {product.stock_qty <= 0 ? (
                         <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center">
-                          <span className="bg-black text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest">HABIS</span>
+                          <span className="bg-black text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest">SOLD OUT</span>
                         </div>
                       ) : product.stock_qty < 5 ? (
                         <div className="absolute top-2 left-2 bg-black text-white px-2.5 py-1 text-[9px] font-black tracking-widest uppercase">
-                          SISA {product.stock_qty}
+                          ONLY {product.stock_qty} LEFT
                         </div>
                       ) : null}
                       
@@ -504,13 +504,13 @@ export default function Catalog() {
                       {product.stock_qty > 0 && (
                         <div className="absolute bottom-0 left-0 right-0 bg-black/90 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out p-3 flex items-center justify-between">
                           <span className="text-[9px] font-black text-white uppercase tracking-widest">
-                            UKURAN TERSEDIA: {product.sizes ? `${product.sizes[0]}-${product.sizes[product.sizes.length-1]}` : ''}
+                            SIZES AVAILABLE: {product.sizes ? `${product.sizes[0]}-${product.sizes[product.sizes.length-1]}` : ''}
                           </span>
                           <button 
                             onClick={(e) => handleAddToCartDirect(e, product)}
                             className="bg-white text-black hover:bg-neutral-200 transition-colors text-[9px] font-black uppercase tracking-widest px-3 py-2 cursor-pointer"
                           >
-                            + KERANJANG
+                            + ADD TO CART
                           </button>
                         </div>
                       )}
@@ -522,7 +522,7 @@ export default function Catalog() {
                       <div className="flex justify-between items-center text-[9px] font-black text-steel tracking-widest uppercase">
                         <span>{product.category}</span>
                         {product.colors && product.colors.length > 0 && (
-                          <span>{product.colors.length} WARNA</span>
+                          <span>{product.colors.length} COLORS</span>
                         )}
                       </div>
                       
@@ -552,16 +552,16 @@ export default function Catalog() {
               SAFTHOO CLUB
             </span>
             <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-ink mt-2">
-              BERGABUNG DENGAN SAFTHOO MEMBERSHIP
+              JOIN THE SAFTHOO MEMBERSHIP
             </h2>
             <p className="text-steel text-[10px] font-bold uppercase tracking-wider leading-relaxed max-w-md">
-              Dapatkan diskon 15% untuk pembelian pertama, info rilis produk eksklusif, serta gratis ongkir selamanya tanpa minimum belanja.
+              Get 15% off your first order, exclusive release access, and free shipping with no minimum spend.
             </p>
             <button 
               onClick={() => navigate('/login')}
               className="mt-4 bg-black text-white px-8 py-4 text-[9px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors cursor-pointer shadow-md"
             >
-              DAFTAR SEKARANG GRATIS
+              JOIN NOW FOR FREE
             </button>
           </div>
         </section>

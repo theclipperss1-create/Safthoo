@@ -42,7 +42,7 @@ export default function CartDrawer() {
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-5 border-b border-whisper">
               <span className="font-black tracking-widest text-xs uppercase text-ink">
-                KERANJANG BELANJA ({totalItems})
+                SHOPPING CART ({totalItems})
               </span>
               <button
                 onClick={() => setIsCartOpen(false)}
@@ -59,12 +59,12 @@ export default function CartDrawer() {
                   <div className="w-12 h-12 bg-surface border border-whisper flex items-center justify-center text-steel mb-4">
                     <ShoppingCartSimple size={22} weight="bold" />
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-steel">Keranjang Anda Kosong</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-steel">Your Cart is Empty</p>
                   <button
                     onClick={() => setIsCartOpen(false)}
                     className="mt-4 border border-black px-4 py-2 text-[9px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors cursor-pointer"
                   >
-                    Mulai Belanja
+                    Start Shopping
                   </button>
                 </div>
               ) : (
@@ -85,7 +85,7 @@ export default function CartDrawer() {
                       </h4>
                       {(item.selectedColor || item.selectedSize) && (
                         <span className="text-[8px] font-black uppercase tracking-widest text-steel leading-none">
-                          {item.selectedColor && `Warna: ${item.selectedColor}`}
+                          {item.selectedColor && `Color: ${item.selectedColor}`}
                           {item.selectedColor && item.selectedSize ? ' | ' : ''}
                           {item.selectedSize ? `Size: ${item.selectedSize}` : ''}
                         </span>
@@ -117,7 +117,7 @@ export default function CartDrawer() {
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                        title="Hapus"
+                        title="Remove"
                       >
                         <Trash size={14} weight="bold" />
                       </button>
@@ -131,17 +131,17 @@ export default function CartDrawer() {
             {items.length > 0 && (
               <div className="p-6 border-t border-whisper bg-surface flex flex-col gap-4">
                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                  <span className="text-steel">Subtotal Belanja</span>
+                  <span className="text-steel">Subtotal</span>
                   <span className="text-black text-xs">Rp {subtotal.toLocaleString('id-ID')}</span>
                 </div>
                 <p className="text-[8px] text-steel font-bold uppercase tracking-widest leading-normal">
-                  Pajak &amp; pengiriman simulasi gratis. Kunci stok saat checkout.
+                  Taxes and shipping calculated at checkout. Stock reserved on checkout.
                 </p>
                 <button
                   onClick={handleCheckout}
                   className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-[10px] hover:bg-neutral-900 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Lanjut ke Pembayaran <ArrowRight size={14} weight="bold" />
+                  PROCEED TO PAYMENT <ArrowRight size={14} weight="bold" />
                 </button>
               </div>
             )}

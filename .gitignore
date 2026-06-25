@@ -28,3 +28,6 @@ system_generated/
 walkthrough.md
 task.md
 implementation_plan.md
+
+# Decoupled Admin Repository (CRITICAL)
+admin-web/

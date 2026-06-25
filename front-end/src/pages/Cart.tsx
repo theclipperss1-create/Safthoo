@@ -32,7 +32,7 @@ export default function Cart() {
       if (dbProd) {
         // If product is inactive or deleted from catalog
         if (!dbProd.is_active) {
-          toast.warning(`Produk ${item.name} sudah tidak tersedia.`);
+          toast.warning(`Product ${item.name} is no longer available.`);
           removeFromCart(item.id);
           return;
         }
@@ -40,10 +40,10 @@ export default function Cart() {
         // If stock has decreased below the cart's selected quantity
         if (dbProd.stock_qty < item.quantity) {
           if (dbProd.stock_qty <= 0) {
-            toast.warning(`Stok ${item.name} habis.`);
+            toast.warning(`Product ${item.name} is out of stock.`);
             removeFromCart(item.id);
           } else {
-            toast.warning(`Stok berubah. Jumlah ${item.name} disesuaikan ke ${dbProd.stock_qty}.`);
+            toast.warning(`Stock changed. Quantity of ${item.name} adjusted to ${dbProd.stock_qty}.`);
             updateQuantity(item.id, dbProd.stock_qty);
           }
         }
@@ -72,10 +72,10 @@ export default function Cart() {
           <div className="w-12 h-12 bg-surface border border-whisper flex items-center justify-center text-steel mb-6">
             <ShoppingCartSimple size={24} weight="bold" />
           </div>
-          <h1 className="text-xl font-black uppercase tracking-widest mb-2">Keranjang Kosong</h1>
-          <p className="text-steel text-xs font-medium mb-8 leading-relaxed">Belum ada barang di keranjang Anda. Jelajahi koleksi sepatu premium kami.</p>
+          <h1 className="text-xl font-black uppercase tracking-widest mb-2">Your Cart is Empty</h1>
+          <p className="text-steel text-xs font-medium mb-8 leading-relaxed">There are no items in your cart. Explore our premium footwear collections.</p>
           <Link to="/" className="inline-flex items-center gap-2 bg-black text-white px-6 py-3.5 font-bold text-xs uppercase tracking-widest hover:bg-neutral-900 transition-colors">
-            <ArrowLeft weight="bold" size={12} /> Kembali ke Katalog
+            <ArrowLeft weight="bold" size={12} /> BACK TO CATALOG
           </Link>
         </div>
       </motion.main>
@@ -95,7 +95,7 @@ export default function Cart() {
           <Link to="/" className="p-2 -ml-2 text-steel hover:text-ink transition-colors">
             <ArrowLeft size={18} weight="bold" />
           </Link>
-          <h1 className="text-base font-black uppercase tracking-widest">KERANJANG ({totalItems})</h1>
+          <h1 className="text-base font-black uppercase tracking-widest">CART ({totalItems})</h1>
         </div>
       </header>
 
@@ -124,7 +124,7 @@ export default function Cart() {
                   <h3 className="font-bold text-ink text-xs uppercase tracking-wider truncate">{item.name}</h3>
                   {(item.selectedColor || item.selectedSize) && (
                     <span className="text-[9px] font-black uppercase tracking-widest text-steel">
-                      {item.selectedColor && `Warna: ${item.selectedColor}`}
+                      {item.selectedColor && `Color: ${item.selectedColor}`}
                       {item.selectedColor && item.selectedSize ? ' | ' : ''}
                       {item.selectedSize ? `Size: ${item.selectedSize}` : ''}
                     </span>
@@ -152,7 +152,7 @@ export default function Cart() {
                   <button 
                     onClick={() => removeFromCart(item.id)}
                     className="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                    title="Hapus Item"
+                    title="Remove Item"
                   >
                     <Trash size={18} weight="bold" />
                   </button>
@@ -165,16 +165,16 @@ export default function Cart() {
         {/* Subtotal Card */}
         <div className="bg-white border border-whisper p-6 flex flex-col gap-4">
           <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest">
-            <span className="text-steel">Subtotal Belanja</span>
+            <span className="text-steel">Subtotal</span>
             <span className="text-sm text-black">Rp {subtotal.toLocaleString('id-ID')}</span>
           </div>
-          <p className="text-[9px] text-steel font-bold uppercase tracking-widest leading-normal">Pajak &amp; pengiriman simulasi gratis. Stok produk dikunci saat transaksi dibuat.</p>
+          <p className="text-[9px] text-steel font-bold uppercase tracking-widest leading-normal">Taxes and shipping calculated at checkout. Product stock is reserved when the transaction is created.</p>
           
           <button 
             onClick={handleCheckout}
             className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-xs hover:bg-neutral-900 transition-colors flex items-center justify-center gap-2 mt-2 cursor-pointer"
           >
-            Lanjut ke Pembayaran <ArrowRight weight="bold" size={14} />
+            PROCEED TO PAYMENT <ArrowRight weight="bold" size={14} />
           </button>
         </div>
       </section>

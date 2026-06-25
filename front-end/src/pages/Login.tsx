@@ -6,6 +6,26 @@ import { GoogleLogo, EnvelopeSimple, Key, ArrowLeft } from '@phosphor-icons/reac
 import { motion, AnimatePresence } from 'framer-motion';
 import { goeyToast as toast } from 'goey-toast';
 
+const getFriendlyAuthErrorMessage = (err: any): string => {
+  const code = err?.code || '';
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'This email address is already registered. Please sign in instead.';
+    case 'auth/weak-password':
+      return 'The password is too weak. It must be at least 6 characters.';
+    case 'auth/invalid-email':
+      return 'The email address format is invalid.';
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return 'Invalid email or password. Please check your credentials.';
+    case 'auth/popup-closed-by-user':
+      return 'The sign-in popup was closed before completion. Please try again.';
+    default:
+      return err?.message || 'Authentication failed. Please try again.';
+  }
+};
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,21 +42,21 @@ export default function Login() {
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSignUp && password !== confirmPassword) {
-      toast.error('Konfirmasi kata sandi tidak cocok.');
+      toast.error('Password confirmation does not match.');
       return;
     }
     setIsLoading(true);
     try {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
-        toast.success('Pendaftaran berhasil! Selamat datang.');
+        toast.success('Registration successful. Welcome.');
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        toast.success('Selamat datang kembali!');
+        toast.success('Welcome back.');
       }
       navigate(from, { replace: true });
     } catch (err: any) {
-      toast.error(err.message || (isSignUp ? 'Pendaftaran gagal.' : 'Login gagal.'));
+      toast.error(getFriendlyAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -47,10 +67,10 @@ export default function Login() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      toast.success('Selamat datang kembali!');
+      toast.success('Welcome back.');
       navigate(from, { replace: true });
     } catch (err: any) {
-      toast.error(err.message || 'Google login gagal.');
+      toast.error(getFriendlyAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +81,7 @@ export default function Login() {
       {/* Back to Catalog shortcut */}
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-steel hover:text-ink transition-colors">
-          <ArrowLeft size={14} weight="bold" /> Kembali ke Katalog
+          <ArrowLeft size={14} weight="bold" /> BACK TO CATALOG
         </Link>
       </div>
 
@@ -76,12 +96,12 @@ export default function Login() {
             {isSignUp ? 'REGISTRATION' : 'SECURE SESSION'}
           </span>
           <h1 className="text-2xl font-black tracking-tight uppercase mb-2 mt-4 text-ink">
-            {isSignUp ? 'Buat Akun' : 'Selamat Datang'}
+            {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h1>
           <p className="text-[10px] text-steel font-bold uppercase tracking-wider leading-relaxed">
             {isSignUp 
-              ? 'Daftar untuk memulai pengalaman belanja eksklusif.' 
-              : 'Masuk ke akun Anda untuk menyelesaikan transaksi.'}
+              ? 'Register to begin an exclusive shopping experience.' 
+              : 'Sign in to your account to complete your transaction.'}
           </p>
         </div>
 
@@ -92,7 +112,7 @@ export default function Login() {
             </span>
             <input
               type="email"
-              placeholder="ALAMAT EMAIL"
+              placeholder="EMAIL ADDRESS"
               className="w-full h-12 pl-11 pr-4 bg-surface border border-whisper outline-none focus:border-black transition-colors text-xs font-bold uppercase tracking-wider text-ink placeholder:text-steel"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -107,7 +127,7 @@ export default function Login() {
             </span>
             <input
               type="password"
-              placeholder="KATA SANDI"
+              placeholder="PASSWORD"
               className="w-full h-12 pl-11 pr-4 bg-surface border border-whisper outline-none focus:border-black transition-colors text-xs font-bold uppercase tracking-wider text-ink placeholder:text-steel"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -131,7 +151,7 @@ export default function Login() {
                   </span>
                   <input
                     type="password"
-                    placeholder="KONFIRMASI KATA SANDI"
+                    placeholder="CONFIRM PASSWORD"
                     className="w-full h-12 pl-11 pr-4 bg-surface border border-whisper outline-none focus:border-black transition-colors text-xs font-bold uppercase tracking-wider text-ink placeholder:text-steel"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -152,7 +172,7 @@ export default function Login() {
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             ) : (
               <>
-                <EnvelopeSimple weight="bold" size={14} /> {isSignUp ? 'Daftar Akun' : 'Masuk Sesi'}
+                <EnvelopeSimple weight="bold" size={14} /> {isSignUp ? 'Create Account' : 'Sign In'}
               </>
             )}
           </button>
@@ -160,7 +180,7 @@ export default function Login() {
 
         <div className="flex items-center gap-4 mb-6">
           <div className="h-px bg-whisper flex-1"></div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-steel">ATAU</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-steel">OR</span>
           <div className="h-px bg-whisper flex-1"></div>
         </div>
 
@@ -174,7 +194,7 @@ export default function Login() {
             <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
           ) : (
             <>
-              <GoogleLogo weight="bold" size={14} /> Masuk dengan Google
+              <GoogleLogo weight="bold" size={14} /> SIGN IN WITH GOOGLE
             </>
           )}
         </button>
@@ -189,7 +209,7 @@ export default function Login() {
             }}
             className="text-[10px] text-black hover:underline font-black uppercase tracking-widest focus:outline-none cursor-pointer"
           >
-            {isSignUp ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}
+            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Register"}
           </button>
         </div>
       </motion.div>

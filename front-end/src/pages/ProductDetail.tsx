@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, onSnapshot, collection, query, where, addDoc } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,6 +38,17 @@ const colorImageMap: Record<string, string> = {
 const getStarsString = (rating: number) => {
   const rounded = Math.round(rating);
   return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+};
+
+const maskName = (name: string) => {
+  if (!name) return 'Anonymous';
+  return name
+    .split(' ')
+    .map(word => {
+      if (word.length <= 2) return word[0] + '*';
+      return word[0] + '*'.repeat(word.length - 2) + word[word.length - 1];
+    })
+    .join(' ');
 };
 
 export default function ProductDetail() {
@@ -82,6 +93,11 @@ export default function ProductDetail() {
   const [newReviewComment, setNewReviewComment] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [newReviewSizeFit, setNewReviewSizeFit] = useState<'kekecilan' | 'pas' | 'kebesaran'>('pas');
+
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editRating, setEditRating] = useState(5);
+  const [editComment, setEditComment] = useState('');
+  const [editSizeFit, setEditSizeFit] = useState<'kekecilan' | 'pas' | 'kebesaran'>('pas');
 
   // Scroll Progress Bar
   const { scrollYProgress } = useScroll();
@@ -130,7 +146,7 @@ export default function ProductDetail() {
       setReviews(reviewData);
       setLoadingReviews(false);
     }, (error) => {
-      console.error("Gagal berlangganan ulasan real-time", error);
+      console.error("Failed to subscribe to reviews in real-time", error);
       setLoadingReviews(false);
     });
 
@@ -156,7 +172,7 @@ export default function ProductDetail() {
           setSelectedSize(data.sizes[0]);
         }
       } else {
-        toast.error("Produk tidak ditemukan");
+        toast.error("Product not found");
         navigate('/');
       }
       setIsLoading(false);
@@ -192,17 +208,17 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (!product || product.stock_qty <= 0) return;
     if (!selectedColor) {
-      toast.warning("Silakan pilih warna terlebih dahulu.");
+      toast.warning("Please select a color first.");
       return;
     }
     if (selectedSize === null) {
-      toast.warning("Silakan pilih ukuran terlebih dahulu.");
+      toast.warning("Please select a size first.");
       return;
     }
 
     setIsAdding(true);
     addToCart(product, quantity, selectedColor, selectedSize);
-    toast.success(`${quantity}x ${product.name} (${selectedColor}, Size ${selectedSize}) masuk ke keranjang!`);
+    toast.success(`${quantity}x ${product.name} (${selectedColor}, Size ${selectedSize}) added to cart.`);
     
     setTimeout(() => {
       setIsAdding(false);
@@ -211,31 +227,32 @@ export default function ProductDetail() {
 
   const handleToggleWishlist = async () => {
     if (!user || !id) {
-      toast.warning("Silakan masuk akun terlebih dahulu.");
+      toast.warning("Please log in to save favorites.");
       return;
     }
     try {
       const added = await toggleWishlist(user.uid, id);
       if (added) {
-        toast.success(`${product?.name} disimpan ke favorit`);
+        toast.success(`${product?.name} saved to wishlist`);
       } else {
-        toast.success(`${product?.name} dihapus dari favorit`);
+        toast.success(`${product?.name} removed from wishlist`);
       }
     } catch (err) {
-      console.error("Gagal mengubah wishlist", err);
+      console.error("Failed to toggle wishlist", err);
     }
   };
 
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReviewName.trim() || !newReviewComment.trim()) {
-      toast.warning("Nama dan komentar ulasan harus diisi.");
+      toast.warning("Name and review comment are required.");
       return;
     }
     
     try {
       await addDoc(collection(db, 'reviews'), {
         product_id: id,
+        user_id: user?.uid || null,
         name: newReviewName.trim(),
         rating: newReviewRating,
         comment: newReviewComment.trim(),
@@ -246,10 +263,41 @@ export default function ProductDetail() {
       setNewReviewComment('');
       setNewReviewRating(5);
       setNewReviewSizeFit('pas');
-      toast.success("Ulasan Anda berhasil dikirim!");
+      toast.success("Your review has been submitted.");
     } catch (err) {
-      console.error("Gagal mengirim ulasan", err);
-      toast.error("Gagal mengirim ulasan. Silakan coba lagi.");
+      console.error("Failed to submit review", err);
+      toast.error("Failed to submit review. Please try again.");
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    try {
+      await deleteDoc(doc(db, 'reviews', reviewId));
+      toast.success("Review deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete review", err);
+      toast.error("Failed to delete review. Please try again.");
+    }
+  };
+
+  const handleUpdateReview = async (e: React.FormEvent, reviewId: string) => {
+    e.preventDefault();
+    if (!editComment.trim()) {
+      toast.warning("Review comment cannot be empty.");
+      return;
+    }
+    try {
+      await updateDoc(doc(db, 'reviews', reviewId), {
+        rating: editRating,
+        comment: editComment.trim(),
+        size_fit: editSizeFit,
+        updated_at: new Date().toISOString()
+      });
+      setEditingReviewId(null);
+      toast.success("Review updated successfully.");
+    } catch (err) {
+      console.error("Failed to update review", err);
+      toast.error("Failed to update review. Please try again.");
     }
   };
 
@@ -295,7 +343,7 @@ export default function ProductDetail() {
       <div className="min-h-[100dvh] flex items-center justify-center bg-canvas text-ink">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
-          <p className="font-bold text-xs uppercase tracking-widest animate-pulse">Memuat detail produk...</p>
+          <p className="font-bold text-xs uppercase tracking-widest animate-pulse">Loading product details...</p>
         </div>
       </div>
     );
@@ -323,7 +371,7 @@ export default function ProductDetail() {
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-steel hover:text-ink transition-colors cursor-pointer"
           >
-            <ArrowLeft size={14} weight="bold" /> Kembali
+            <ArrowLeft size={14} weight="bold" /> Back
           </button>
           
           <span 
@@ -339,7 +387,7 @@ export default function ProductDetail() {
               <button 
                 onClick={() => setIsWishlistOpen(true)}
                 className="relative p-2 text-steel hover:text-ink transition-colors cursor-pointer"
-                title="Daftar Keinginan"
+                title="Wishlist"
               >
                 <Heart size={20} weight="bold" />
                 {wishlistIds.length > 0 && (
@@ -360,7 +408,7 @@ export default function ProductDetail() {
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-steel hover:text-ink transition-colors cursor-pointer"
-              title="Keranjang Belanja"
+              title="Shopping Cart"
             >
               <ShoppingCart size={20} weight="bold" />
               {totalItems > 0 && (
@@ -399,11 +447,11 @@ export default function ProductDetail() {
           />
           {product.stock_qty <= 0 ? (
             <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
-              <span className="bg-black text-white px-5 py-2.5 text-xs font-bold uppercase tracking-widest">Stok Habis</span>
+              <span className="bg-black text-white px-5 py-2.5 text-xs font-bold uppercase tracking-widest">Out of Stock</span>
             </div>
           ) : (
             <div className="absolute bottom-3 left-3 bg-black/60 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 border border-white/10 opacity-100 group-hover:opacity-0 transition-opacity pointer-events-none hidden md:block">
-              Arahkan kursor untuk memperbesar
+              Hover to zoom
             </div>
           )}
         </div>
@@ -430,7 +478,7 @@ export default function ProductDetail() {
               {/* Color Selection */}
               {product.colors && product.colors.length > 0 && (
                 <div className="flex flex-col gap-3">
-                  <h4 className="text-[10px] font-black text-steel uppercase tracking-widest">PILIH WARNA: <span className="text-black">{selectedColor}</span></h4>
+                  <h4 className="text-[10px] font-black text-steel uppercase tracking-widest">SELECT COLOR: <span className="text-black">{selectedColor}</span></h4>
                   <div className="flex flex-wrap gap-3">
                     {product.colors.map((color) => {
                       const hex = colorHexMap[color] || '#cbd5e1';
@@ -470,12 +518,12 @@ export default function ProductDetail() {
               {product.sizes && product.sizes.length > 0 && (
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-[10px] font-black text-steel uppercase tracking-widest">PILIH UKURAN (EU): <span className="text-black">{selectedSize}</span></h4>
+                    <h4 className="text-[10px] font-black text-steel uppercase tracking-widest">SELECT SIZE (EU): <span className="text-black">{selectedSize}</span></h4>
                     <button 
                       onClick={() => setIsSizeModalOpen(true)}
                       className="text-[9px] font-black uppercase tracking-widest text-steel hover:text-black underline cursor-pointer focus:outline-none"
                     >
-                      PANDUAN UKURAN
+                      SIZE GUIDE
                     </button>
                   </div>
                   <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
@@ -503,7 +551,7 @@ export default function ProductDetail() {
 
               {/* Quantity Selection */}
               <div className="flex items-center justify-between border-t border-b border-whisper py-4 mt-2">
-                <span className="font-bold text-steel text-xs uppercase tracking-widest">Jumlah</span>
+                <span className="font-bold text-steel text-xs uppercase tracking-widest">Quantity</span>
                 <div className="flex items-center bg-surface border border-whisper">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
@@ -525,20 +573,20 @@ export default function ProductDetail() {
 
               {/* Stock Info */}
               <div className="flex justify-between items-center text-[10px] font-black text-steel uppercase tracking-widest">
-                <span>STATUS STOK:</span>
+                <span>STOCK STATUS:</span>
                 <span>
                   {product.stock_qty < 5 ? (
-                    <span className="text-red-600 font-black">HANYA TERSISA {product.stock_qty} UNIT!</span>
+                    <span className="text-red-600 font-black">ONLY {product.stock_qty} UNITS LEFT</span>
                   ) : (
-                    <span className="text-black">TERSEDIA ({product.stock_qty})</span>
+                    <span className="text-black">IN STOCK ({product.stock_qty})</span>
                   )}
                 </span>
               </div>
             </div>
           ) : (
             <div className="bg-surface border border-whisper p-5 text-center">
-              <p className="text-xs text-black font-black uppercase tracking-widest">Produk Habis Terjual</p>
-              <p className="text-xs text-steel mt-1 font-medium leading-relaxed">Stok produk ini sedang kosong. Silakan periksa kembali nanti.</p>
+              <p className="text-xs text-black font-black uppercase tracking-widest">Sold Out</p>
+              <p className="text-xs text-steel mt-1 font-medium leading-relaxed">This product is currently out of stock. Please check back later.</p>
             </div>
           )}
 
@@ -554,9 +602,9 @@ export default function ProductDetail() {
               {isAdding ? (
                 <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
               ) : product.stock_qty <= 0 ? (
-                'Stok Habis'
+                'Out of Stock'
               ) : (
-                'Masukkan ke Keranjang'
+                'Add to Cart'
               )}
             </motion.button>
 
@@ -568,7 +616,7 @@ export default function ProductDetail() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="px-5 border border-whisper bg-white hover:border-black text-black flex items-center justify-center cursor-pointer transition-colors shadow-sm rounded-none"
-                title="Simpan ke Favorit"
+                title="Save to Wishlist"
               >
                 <Heart 
                   size={20} 
@@ -587,7 +635,7 @@ export default function ProductDetail() {
                 onClick={() => toggleSection('desc')}
                 className="w-full py-4 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-ink hover:text-steel transition-colors focus:outline-none cursor-pointer"
               >
-                <span>DESKRIPSI & DETAIL</span>
+                <span>DESCRIPTION &amp; DETAILS</span>
                 <span className="text-xs font-bold">{openSection === 'desc' ? '—' : '+'}</span>
               </button>
               <AnimatePresence initial={false}>
@@ -600,7 +648,7 @@ export default function ProductDetail() {
                     className="overflow-hidden pb-4"
                   >
                     <p className="text-xs text-steel leading-relaxed font-medium">
-                      {product.description} Terbuat dari bahan sintetis berkinerja tinggi serta sol karet divulkanisasi untuk mencengkeram medan apa pun secara dinamis.
+                      {product.description} Constructed with high-performance synthetic materials and a vulcanized rubber outsole for dynamic grip on any terrain.
                     </p>
                   </motion.div>
                 )}
@@ -613,7 +661,7 @@ export default function ProductDetail() {
                 onClick={() => toggleSection('shipping')}
                 className="w-full py-4 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-ink hover:text-steel transition-colors focus:outline-none cursor-pointer"
               >
-                <span>PENGIRIMAN & PENGEMBALIAN GRATIS</span>
+                <span>FREE SHIPPING &amp; RETURNS</span>
                 <span className="text-xs font-bold">{openSection === 'shipping' ? '—' : '+'}</span>
               </button>
               <AnimatePresence initial={false}>
@@ -626,7 +674,7 @@ export default function ProductDetail() {
                     className="overflow-hidden pb-4"
                   >
                     <p className="text-xs text-steel leading-relaxed font-medium">
-                      Pengiriman standar gratis untuk semua transaksi simulasi QRIS. Pengembalian barang dapat dilakukan dalam waktu 30 hari sejak tanggal pembelian tanpa dikenakan biaya tambahan.
+                      Free standard shipping on all simulated QRIS orders. Returns accepted within 30 days of purchase at no additional charge.
                     </p>
                   </motion.div>
                 )}
@@ -639,7 +687,7 @@ export default function ProductDetail() {
                 onClick={() => toggleSection('reviews')}
                  className="w-full py-4 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-ink hover:text-steel transition-colors focus:outline-none cursor-pointer"
                >
-                 <span>ULASAN ({totalReviews}) • {getStarsString(Number(averageRating))} {averageRating}</span>
+                 <span>REVIEWS ({totalReviews}) • {getStarsString(Number(averageRating))} {averageRating}</span>
                  <span className="text-xs font-bold">{openSection === 'reviews' ? '—' : '+'}</span>
               </button>
               <AnimatePresence initial={false}>
@@ -657,13 +705,13 @@ export default function ProductDetail() {
                       
                       {/* Rating Distribution Progress Bars */}
                       <div className="flex flex-col gap-2">
-                        <span className="text-[9px] font-black tracking-widest text-steel">DISTRIBUSI RATING</span>
+                        <span className="text-[9px] font-black tracking-widest text-steel">RATING DISTRIBUTION</span>
                         <div className="flex flex-col gap-1.5">
                           {[5, 4, 3, 2, 1].map((stars) => {
                             const percent = starPercentages[stars - 1];
                             return (
                               <div key={stars} className="flex items-center gap-3 text-[8px] font-black uppercase tracking-widest text-steel">
-                                <span className="w-12">{stars} Bintang</span>
+                                <span className="w-12">{stars} {stars === 1 ? 'Star' : 'Stars'}</span>
                                 <div className="flex-1 h-1.5 bg-whisper relative">
                                   <div className="absolute top-0 left-0 h-full bg-black" style={{ width: `${percent}%` }} />
                                 </div>
@@ -676,7 +724,7 @@ export default function ProductDetail() {
 
                       {/* Size Fit Indicator Slider */}
                       <div className="flex flex-col gap-2">
-                        <span className="text-[9px] font-black tracking-widest text-steel">KECOCOKAN UKURAN (SIZE FIT)</span>
+                        <span className="text-[9px] font-black tracking-widest text-steel">SIZE FIT</span>
                         <div className="h-0.5 bg-whisper relative my-4">
                           {/* Scale Markers */}
                           <div className="absolute left-[10%] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-whisper rounded-full" />
@@ -690,14 +738,14 @@ export default function ProductDetail() {
                           />
                         </div>
                         <div className="flex justify-between text-[8px] font-black text-steel tracking-widest uppercase">
-                          <span>Kekecilan</span>
-                          <span>Pas</span>
-                          <span>Kebesaran</span>
+                          <span>Runs Small</span>
+                          <span>True to Size</span>
+                          <span>Runs Large</span>
                         </div>
                         <div className="mt-2 text-center py-1.5 bg-surface border border-whisper text-[9px] font-black uppercase tracking-widest text-black">
-                          {sizeFitCount === 0 ? 'Belum Ada Data Sizing' : 
-                           sizeFitAvg < -0.25 ? 'Cenderung Kekecilan' : 
-                           sizeFitAvg > 0.25 ? 'Cenderung Kebesaran' : 'Sesuai Ukuran (True to Size)'}
+                          {sizeFitCount === 0 ? 'No sizing data yet' : 
+                           sizeFitAvg < -0.25 ? 'Runs slightly small' : 
+                           sizeFitAvg > 0.25 ? 'Runs slightly large' : 'True to Size'}
                         </div>
                       </div>
 
@@ -708,27 +756,117 @@ export default function ProductDetail() {
                       {loadingReviews && reviews.length === 0 ? (
                         <div className="flex items-center gap-2 py-4 justify-center">
                           <div className="w-4 h-4 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
-                          <span className="text-steel text-[9px] font-black uppercase tracking-widest">Memuat ulasan...</span>
+                          <span className="text-steel text-[9px] font-black uppercase tracking-widest">Loading reviews...</span>
                         </div>
                       ) : reviews.length === 0 ? (
                         <div className="text-center py-8 text-steel text-[9px] font-black uppercase tracking-widest">
-                          Belum ada ulasan untuk produk ini. Jadilah yang pertama!
+                          No reviews yet for this product. Be the first to write one.
                         </div>
                       ) : (
                         reviews.map((r) => (
                           <div key={r.id} className="border-b border-whisper/40 pb-3 last:border-0 last:pb-0 text-left">
-                            <div className="flex justify-between items-start text-[9px] font-black uppercase tracking-widest">
-                              <div className="flex flex-col gap-0.5">
-                                <span className="text-black">{r.name}</span>
-                                <span className="text-steel text-[8px]">UKURAN FIT: {r.size_fit || 'PAS'}</span>
-                              </div>
-                              <div className="text-black flex gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star key={i} size={10} weight={i < r.rating ? 'fill' : 'bold'} />
-                                ))}
-                              </div>
-                            </div>
-                            <p className="text-[10px] text-steel mt-1.5 font-medium leading-relaxed uppercase tracking-wider">{r.comment}</p>
+                            {editingReviewId === r.id ? (
+                              <form onSubmit={(e) => handleUpdateReview(e, r.id)} className="flex flex-col gap-3 mt-2 bg-surface p-4 border border-whisper">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-steel">Rating</span>
+                                  <select
+                                    value={editRating}
+                                    onChange={(e) => setEditRating(Number(e.target.value))}
+                                    className="bg-white border border-whisper px-2 py-1 text-[9px] font-black uppercase tracking-widest outline-none font-sans"
+                                  >
+                                    <option value={5}>★★★★★ 5 Stars</option>
+                                    <option value={4}>★★★★☆ 4 Stars</option>
+                                    <option value={3}>★★★☆☆ 3 Stars</option>
+                                    <option value={2}>★★☆☆☆ 2 Stars</option>
+                                    <option value={1}>★☆☆☆☆ 1 Star</option>
+                                  </select>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-steel">Size Fit</span>
+                                  <div className="flex gap-1">
+                                    {(['kekecilan', 'pas', 'kebesaran'] as const).map((fit) => (
+                                      <button
+                                        key={fit}
+                                        type="button"
+                                        onClick={() => setEditSizeFit(fit)}
+                                        className={`px-2 py-1 border text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer rounded-none focus:outline-none ${
+                                          editSizeFit === fit
+                                            ? 'bg-black border-black text-white'
+                                            : 'bg-white border-whisper text-steel hover:border-black hover:text-black'
+                                        }`}
+                                      >
+                                        {fit === 'pas' ? 'True to Size' : fit === 'kekecilan' ? 'Runs Small' : 'Runs Large'}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <textarea
+                                    value={editComment}
+                                    onChange={(e) => setEditComment(e.target.value)}
+                                    className="w-full bg-white border border-whisper p-2 text-[10px] font-bold uppercase tracking-wider outline-none resize-none"
+                                    rows={2}
+                                    required
+                                  />
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingReviewId(null)}
+                                    className="px-3 py-1.5 border border-whisper text-[8px] font-black uppercase tracking-widest hover:bg-surface"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </form>
+                            ) : (
+                              <>
+                                <div className="flex justify-between items-start text-[9px] font-black uppercase tracking-widest">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-black">
+                                      {user && r.user_id === user.uid ? `${maskName(r.name)} (You)` : maskName(r.name)}
+                                    </span>
+                                    <span className="text-steel text-[8px]">
+                                      SIZE FIT: {r.size_fit === 'pas' ? 'TRUE TO SIZE' : r.size_fit === 'kekecilan' ? 'RUNS SMALL' : r.size_fit === 'kebesaran' ? 'RUNS LARGE' : 'TRUE TO SIZE'}
+                                    </span>
+                                  </div>
+                                  <div className="text-black flex gap-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star key={i} size={10} weight={i < r.rating ? 'fill' : 'bold'} />
+                                    ))}
+                                  </div>
+                                </div>
+                                <p className="text-[10px] text-steel mt-1.5 font-medium leading-relaxed uppercase tracking-wider">{r.comment}</p>
+                                
+                                {user && r.user_id === user.uid && (
+                                  <div className="flex gap-3 mt-2 text-[8px] font-black uppercase tracking-widest text-steel">
+                                    <button
+                                      onClick={() => {
+                                        setEditingReviewId(r.id);
+                                        setEditRating(r.rating);
+                                        setEditComment(r.comment);
+                                        setEditSizeFit(r.size_fit || 'pas');
+                                      }}
+                                      className="hover:text-black transition-colors cursor-pointer"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteReview(r.id)}
+                                      className="hover:text-red-500 transition-colors cursor-pointer text-red-400"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
                         ))
                       )}
@@ -738,15 +876,15 @@ export default function ProductDetail() {
                     {user ? (
                       <form onSubmit={handleAddReview} className="border-t border-whisper pt-4 flex flex-col gap-4">
                         <span className="text-[10px] font-black uppercase tracking-widest text-black flex items-center gap-1">
-                          <Chat size={14} weight="bold" /> Tulis Ulasan Anda
+                          <Chat size={14} weight="bold" /> Write a Review
                         </span>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[8px] font-black uppercase tracking-widest text-steel">NAMA LENGKAP *</label>
+                            <label className="text-[8px] font-black uppercase tracking-widest text-steel">FULL NAME *</label>
                             <input
                               type="text"
-                              placeholder="NAMA ANDA"
+                              placeholder="YOUR NAME"
                               className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black rounded-none"
                               value={newReviewName}
                               onChange={(e) => setNewReviewName(e.target.value)}
@@ -754,24 +892,24 @@ export default function ProductDetail() {
                             />
                           </div>
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[8px] font-black uppercase tracking-widest text-steel">RATING PENILAIAN *</label>
+                            <label className="text-[8px] font-black uppercase tracking-widest text-steel">RATING *</label>
                             <select
                               className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black rounded-none font-sans"
                               value={newReviewRating}
                               onChange={(e) => setNewReviewRating(Number(e.target.value))}
                             >
-                              <option value={5}>★★★★★ 5 BINTANG</option>
-                              <option value={4}>★★★★☆ 4 BINTANG</option>
-                              <option value={3}>★★★☆☆ 3 BINTANG</option>
-                              <option value={2}>★★☆☆☆ 2 BINTANG</option>
-                              <option value={1}>★☆☆☆☆ 1 BINTANG</option>
+                              <option value={5}>★★★★★ 5 STARS</option>
+                              <option value={4}>★★★★☆ 4 STARS</option>
+                              <option value={3}>★★★☆☆ 3 STARS</option>
+                              <option value={2}>★★☆☆☆ 2 STARS</option>
+                              <option value={1}>★☆☆☆☆ 1 STAR</option>
                             </select>
                           </div>
                         </div>
 
                         {/* Size Fit Selector Radio Box Group */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">Kecocokan Ukuran Sepatu *</label>
+                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">Size Fit *</label>
                           <div className="grid grid-cols-3 gap-2">
                             {(['kekecilan', 'pas', 'kebesaran'] as const).map((fit) => (
                               <button
@@ -784,16 +922,16 @@ export default function ProductDetail() {
                                     : 'bg-white border-whisper text-steel hover:border-black hover:text-black'
                                 }`}
                               >
-                                {fit}
+                                {fit === 'pas' ? 'TRUE TO SIZE' : fit === 'kekecilan' ? 'RUNS SMALL' : 'RUNS LARGE'}
                               </button>
                             ))}
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">KOMENTAR / FEEDBACK *</label>
+                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">REVIEW COMMENT *</label>
                           <textarea
-                            placeholder="ULASAN DAN FEEDBACK SNEAKER ANDA"
+                            placeholder="YOUR SNEAKER REVIEW AND FEEDBACK"
                             rows={2}
                             className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black resize-none rounded-none"
                             value={newReviewComment}
@@ -805,18 +943,18 @@ export default function ProductDetail() {
                           type="submit"
                           className="bg-black text-white py-3 text-[9px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors self-start px-6 cursor-pointer rounded-none"
                         >
-                          Kirim Ulasan
+                          Submit Review
                         </button>
                       </form>
                     ) : (
                       <div className="border-t border-whisper pt-6 pb-2 text-center flex flex-col items-center gap-3">
-                        <p className="text-[10px] text-steel font-black uppercase tracking-widest">Silakan masuk akun untuk menulis ulasan produk</p>
+                        <p className="text-[10px] text-steel font-black uppercase tracking-widest">Please log in to write a review</p>
                         <button
                           type="button"
                           onClick={() => navigate('/login')}
                           className="border border-black bg-white text-black px-5 py-2 hover:bg-black hover:text-white transition-colors text-[9px] font-black uppercase tracking-widest cursor-pointer rounded-none"
                         >
-                          Masuk Akun
+                          Log In
                         </button>
                       </div>
                     )}
@@ -831,7 +969,7 @@ export default function ProductDetail() {
       {/* Recommendation Grid (You Might Also Like) */}
       {recommendations.length > 0 && (
         <section className="mt-24 border-t border-whisper pt-16 px-6 max-w-7xl w-full mx-auto">
-          <h3 className="text-xs font-black uppercase tracking-widest text-steel mb-8">ANDA JUGA MUNGKIN MENYUKAI</h3>
+          <h3 className="text-xs font-black uppercase tracking-widest text-steel mb-8">YOU MAY ALSO LIKE</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {recommendations.map(p => (
               <div 
@@ -882,12 +1020,12 @@ export default function ProductDetail() {
               </div>
 
               <p className="text-[11px] text-steel font-medium leading-relaxed uppercase tracking-wide">
-                Bandingkan ukuran sepatu Anda yang biasa dari merk Nike atau Adidas untuk mendapatkan rekomendasi ukuran terbaik dari Safthoo.
+                Compare your usual shoe size from Nike, Adidas, or Converse to find your recommended Safthoo size.
               </p>
 
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">MERK SEPATU ANDA</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">YOUR SHOE BRAND</label>
                   <select 
                     value={advisorBrand}
                     onChange={(e) => setAdvisorBrand(e.target.value)}
@@ -900,7 +1038,7 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">UKURAN BIASA (EU)</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-steel">USUAL SIZE (EU)</label>
                   <select 
                     value={advisorSize}
                     onChange={(e) => setAdvisorSize(Number(e.target.value))}
@@ -914,9 +1052,9 @@ export default function ProductDetail() {
 
                 <button 
                   onClick={calculateRecommendedSize}
-                  className="bg-black text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors mt-2 cursor-pointer animate-pulse"
+                  className="bg-black text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors mt-2 cursor-pointer"
                 >
-                  HITUNG UKURAN REKOMENDASI
+                  CALCULATE RECOMMENDED SIZE
                 </button>
 
                 {recommendedSizeResult !== null && (
@@ -925,27 +1063,27 @@ export default function ProductDetail() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-2 bg-surface border border-whisper p-4 text-center"
                   >
-                    <span className="text-[9px] font-black uppercase tracking-widest text-steel block">REKOMENDASI UKURAN SAFTHOO</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-steel block">RECOMMENDED SAFTHOO SIZE</span>
                     <span className="text-xl font-black text-ink block mt-1">EU {recommendedSizeResult}</span>
                     <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 block mt-1 font-sans">
-                      {advisorBrand === 'nike' ? 'FIT: TRUE TO SIZE (PAS DI KAKI)' : 
-                       advisorBrand === 'adidas' ? 'SAFTHOO RUNS SLIGHTLY LARGE (TURUN 0.5/1 SIZE)' : 
-                       'SAFTHOO RUNS SLIGHTLY SMALL (NAIK 0.5/1 SIZE)'}
+                      {advisorBrand === 'nike' ? 'FIT: TRUE TO SIZE' : 
+                       advisorBrand === 'adidas' ? 'SAFTHOO RUNS SLIGHTLY LARGE (GO DOWN 0.5 TO 1 SIZE)' : 
+                       'SAFTHOO RUNS SLIGHTLY SMALL (GO UP 0.5 TO 1 SIZE)'}
                     </span>
                     <button
                       type="button"
                       onClick={() => {
                         if (product.sizes?.includes(recommendedSizeResult)) {
                           setSelectedSize(recommendedSizeResult);
-                          toast.success(`Ukuran ${recommendedSizeResult} berhasil diterapkan!`);
+                          toast.success(`Size ${recommendedSizeResult} applied successfully.`);
                         } else {
-                          toast.warning(`Ukuran ${recommendedSizeResult} tidak tersedia untuk produk ini.`);
+                          toast.warning(`Size ${recommendedSizeResult} is not available for this product.`);
                         }
                         setIsSizeModalOpen(false);
                       }}
                       className="mt-3 underline text-[9px] font-black uppercase tracking-widest text-black hover:text-steel block mx-auto cursor-pointer"
                     >
-                      GUNAKAN UKURAN INI
+                      USE THIS SIZE
                     </button>
                   </motion.div>
                 )}
