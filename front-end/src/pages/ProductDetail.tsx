@@ -735,78 +735,91 @@ export default function ProductDetail() {
                     </div>
 
                     {/* Write a Review Form */}
-                    <form onSubmit={handleAddReview} className="border-t border-whisper pt-4 flex flex-col gap-4">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-black flex items-center gap-1">
-                        <Chat size={14} weight="bold" /> Tulis Ulasan Anda
-                      </span>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {user ? (
+                      <form onSubmit={handleAddReview} className="border-t border-whisper pt-4 flex flex-col gap-4">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-black flex items-center gap-1">
+                          <Chat size={14} weight="bold" /> Tulis Ulasan Anda
+                        </span>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[8px] font-black uppercase tracking-widest text-steel">NAMA LENGKAP *</label>
+                            <input
+                              type="text"
+                              placeholder="NAMA ANDA"
+                              className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black rounded-none"
+                              value={newReviewName}
+                              onChange={(e) => setNewReviewName(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[8px] font-black uppercase tracking-widest text-steel">RATING PENILAIAN *</label>
+                            <select
+                              className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black rounded-none font-sans"
+                              value={newReviewRating}
+                              onChange={(e) => setNewReviewRating(Number(e.target.value))}
+                            >
+                              <option value={5}>★★★★★ 5 BINTANG</option>
+                              <option value={4}>★★★★☆ 4 BINTANG</option>
+                              <option value={3}>★★★☆☆ 3 BINTANG</option>
+                              <option value={2}>★★☆☆☆ 2 BINTANG</option>
+                              <option value={1}>★☆☆☆☆ 1 BINTANG</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Size Fit Selector Radio Box Group */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">NAMA LENGKAP *</label>
-                          <input
-                            type="text"
-                            placeholder="NAMA ANDA"
-                            className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black rounded-none"
-                            value={newReviewName}
-                            onChange={(e) => setNewReviewName(e.target.value)}
+                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">Kecocokan Ukuran Sepatu *</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {(['kekecilan', 'pas', 'kebesaran'] as const).map((fit) => (
+                              <button
+                                key={fit}
+                                type="button"
+                                onClick={() => setNewReviewSizeFit(fit)}
+                                className={`py-2 border text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer rounded-none focus:outline-none ${
+                                  newReviewSizeFit === fit
+                                    ? 'bg-black border-black text-white'
+                                    : 'bg-white border-whisper text-steel hover:border-black hover:text-black'
+                                }`}
+                              >
+                                {fit}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">KOMENTAR / FEEDBACK *</label>
+                          <textarea
+                            placeholder="ULASAN DAN FEEDBACK SNEAKER ANDA"
+                            rows={2}
+                            className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black resize-none rounded-none"
+                            value={newReviewComment}
+                            onChange={(e) => setNewReviewComment(e.target.value)}
                             required
                           />
                         </div>
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-steel">RATING PENILAIAN *</label>
-                          <select
-                            className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black rounded-none font-sans"
-                            value={newReviewRating}
-                            onChange={(e) => setNewReviewRating(Number(e.target.value))}
-                          >
-                            <option value={5}>★★★★★ 5 BINTANG</option>
-                            <option value={4}>★★★★☆ 4 BINTANG</option>
-                            <option value={3}>★★★☆☆ 3 BINTANG</option>
-                            <option value={2}>★★☆☆☆ 2 BINTANG</option>
-                            <option value={1}>★☆☆☆☆ 1 BINTANG</option>
-                          </select>
-                        </div>
+                        <button
+                          type="submit"
+                          className="bg-black text-white py-3 text-[9px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors self-start px-6 cursor-pointer rounded-none"
+                        >
+                          Kirim Ulasan
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="border-t border-whisper pt-6 pb-2 text-center flex flex-col items-center gap-3">
+                        <p className="text-[10px] text-steel font-black uppercase tracking-widest">Silakan masuk akun untuk menulis ulasan produk</p>
+                        <button
+                          type="button"
+                          onClick={() => navigate('/login')}
+                          className="border border-black bg-white text-black px-5 py-2 hover:bg-black hover:text-white transition-colors text-[9px] font-black uppercase tracking-widest cursor-pointer rounded-none"
+                        >
+                          Masuk Akun
+                        </button>
                       </div>
-
-                      {/* Size Fit Selector Radio Box Group */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[8px] font-black uppercase tracking-widest text-steel">Kecocokan Ukuran Sepatu *</label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {(['kekecilan', 'pas', 'kebesaran'] as const).map((fit) => (
-                            <button
-                              key={fit}
-                              type="button"
-                              onClick={() => setNewReviewSizeFit(fit)}
-                              className={`py-2 border text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer rounded-none focus:outline-none ${
-                                newReviewSizeFit === fit
-                                  ? 'bg-black border-black text-white'
-                                  : 'bg-white border-whisper text-steel hover:border-black hover:text-black'
-                              }`}
-                            >
-                              {fit}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[8px] font-black uppercase tracking-widest text-steel">KOMENTAR / FEEDBACK *</label>
-                        <textarea
-                          placeholder="ULASAN DAN FEEDBACK SNEAKER ANDA"
-                          rows={2}
-                          className="w-full bg-white border border-whisper px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-ink outline-none focus:border-black resize-none rounded-none"
-                          value={newReviewComment}
-                          onChange={(e) => setNewReviewComment(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="bg-black text-white py-3 text-[9px] font-black uppercase tracking-widest hover:bg-neutral-900 transition-colors self-start px-6 cursor-pointer rounded-none"
-                      >
-                        Kirim Ulasan
-                      </button>
-                    </form>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
