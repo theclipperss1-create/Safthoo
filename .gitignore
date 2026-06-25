@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Production Builds
+dist/
+**/dist/
+
+# Local Environment Variables & Secrets (CRITICAL SECURITY)
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# IDE & System Caches
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+.antigravity/
+mcp/
+brain/
+scratch/
+system_generated/
+walkthrough.md
+task.md
+implementation_plan.md

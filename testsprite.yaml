@@ -1,0 +1,32 @@
+name: "Safthoo MVP Critical Paths"
+description: "End-to-end testing for Safthoo E-Commerce MVP."
+scenarios:
+  - name: "Authentication"
+    steps:
+      - Navigate to "/"
+      - Click "Sign In"
+      - Verify redirect to "/login"
+      - Fill email and password, submit
+      - Verify redirect back to "/"
+  - name: "Browsing and Cart Management"
+    steps:
+      - Navigate to "/"
+      - Search for a product using the search bar
+      - Click "Masuk Keranjang" on a product
+      - Verify gooey toast notification appears
+      - Verify cart badge updates
+      - Navigate to "/cart"
+      - Increase quantity of the item
+      - Verify subtotal changes
+  - name: "Checkout Flow"
+    steps:
+      - From "/cart", click "Lanjut ke Pembayaran"
+      - Verify redirect to "/checkout"
+      - Verify UI shows QRIS Simulation and "Simulasikan Bayar Sukses" button
+      - Click "Simulasikan Bayar Sukses"
+      - Verify UI changes to "Pembayaran Berhasil!"
+  - name: "Security Rejection (Out of Stock)"
+    steps:
+      - Navigate to "/"
+      - Find "Geist Keycap Set" (stock is 0)
+      - Verify "Masuk Keranjang" is disabled and "Out of Stock" overlay is visible
